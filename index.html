@@ -26,10 +26,13 @@
         </div>
 
         <!-- 錯誤提示列 -->
-        <div id="errorBanner" class="hidden bg-red-900/50 border-l-4 border-red-500 p-4 text-red-200 text-sm">
-            <p id="errorText">發生錯誤</p>
+        <div id="errorBanner" class="hidden bg-red-900/80 border-l-4 border-red-500 p-4 text-red-200 text-sm relative">
+            <button onclick="document.getElementById('errorBanner').classList.add('hidden')" class="absolute top-2 right-2 text-red-400 hover:text-red-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <p id="errorText" class="whitespace-pre-wrap pr-4 font-mono text-xs">發生錯誤</p>
         </div>
-        <div id="successBanner" class="hidden bg-emerald-900/50 border-l-4 border-emerald-500 p-4 text-emerald-200 text-sm">
+        <div id="successBanner" class="hidden bg-emerald-900/80 border-l-4 border-emerald-500 p-4 text-emerald-200 text-sm">
             <p id="successText">操作成功</p>
         </div>
 
@@ -201,10 +204,13 @@
             else overlay.classList.replace('flex', 'hidden');
         };
 
-        const showError = (msg) => {
-            document.getElementById('errorText').textContent = msg;
-            document.getElementById('errorBanner').classList.remove('hidden');
-            setTimeout(() => document.getElementById('errorBanner').classList.add('hidden'), 5000);
+        const showError = (msg, autoHide = true) => {
+            document.getElementById('errorText').innerText = msg;
+            const banner = document.getElementById('errorBanner');
+            banner.classList.remove('hidden');
+            if (autoHide) {
+                setTimeout(() => banner.classList.add('hidden'), 8000);
+            }
         };
 
         const showSuccess = (msg) => {
@@ -218,7 +224,7 @@
             document.getElementById('successBanner').classList.add('hidden');
         };
 
-        // 翻譯 Firebase 錯誤代碼
+        // 翻譯 Firebase 錯誤代碼 (重點更新：加入明確的網域提示)
         const translateError = (error) => {
             const code = error.code;
             if(code === 'auth/invalid-email') return '電子信箱格式錯誤。';
@@ -228,6 +234,10 @@
             if(code === 'auth/email-already-in-use') return '此電子信箱已被註冊。';
             if(code === 'auth/weak-password') return '密碼強度太弱，請至少輸入 6 個字元。';
             if(code === 'auth/popup-closed-by-user') return 'Google 登入視窗已關閉。';
+            if(code === 'auth/unauthorized-domain') {
+                const currentDomain = window.location.hostname;
+                return `【網域未授權】\n請複製下方這串網域，並加入 Firebase 的「授權網域」白名單中：\n\n${currentDomain}`;
+            }
             return `發生錯誤 (${code})，請稍後再試。`;
         };
 
@@ -235,13 +245,13 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 // 如果是信箱註冊但未驗證
-                if (user.providerData[0].providerId === 'password' && !user.emailVerified) {
+                if (user.providerData.length > 0 && user.providerData[0].providerId === 'password' && !user.emailVerified) {
                     showError("請先至您的電子信箱點擊驗證連結，再進行登入。");
                     signOut(auth);
                     window.switchView('loginView');
                     return;
                 }
-                document.getElementById('welcomeEmail').textContent = user.email;
+                document.getElementById('welcomeEmail').textContent = user.email || "Google 使用者";
                 window.switchView('successView');
             } else {
                 window.switchView('loginView');
@@ -310,7 +320,9 @@
                 await signInWithPopup(auth, googleProvider);
                 // 成功後會觸發 onAuthStateChanged 跳轉
             } catch (error) {
-                showError(translateError(error));
+                const isDomainError = error.code === 'auth/unauthorized-domain';
+                // 若為網域錯誤則不自動隱藏，讓使用者能複製
+                showError(translateError(error), !isDomainError);
             } finally {
                 setLoading(false);
             }
@@ -322,7 +334,6 @@
         // 5. 進入系統按鈕
         document.getElementById('enterAppBtn').addEventListener('click', () => {
             setLoading(true, '正在載入系統模組...');
-            // 實務上這裡會是 window.location.href = '/app.html' 或載入 React 元件
             setTimeout(() => {
                 alert("即將為您導向至【投資組合健檢中心 App.jsx】介面！\n\n(此為展示跳轉行為，實務中可配置路由)");
                 setLoading(false);
