@@ -1,1027 +1,345 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  LineChart, Wallet, PieChart, TrendingUp, Search, AlertCircle, 
-  RefreshCw, X, ChevronRight, Activity, History, CheckCircle2, 
-  Landmark, PiggyBank, Award, Banknote, Calendar, Edit, Trash2, PlusCircle
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入 - 投資組合健檢中心</title>
+    <!-- 引入 Tailwind CSS 以美化純 HTML 畫面 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 隱藏/顯示視圖的平滑過渡設定 */
+        .view-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .view-section.active { display: block; opacity: 1; }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4 font-sans text-slate-100">
 
-// --- 初始資料 (加入真實合理的台股測試數據) ---
-const initialPortfolio = [
-  { id: '1', code: '2330', name: '台積電', shares: 1000, price: 820, avgCost: 550, dividends: 15000 },
-  { id: '2', code: '0050', name: '元大台灣50', shares: 3000, price: 160, avgCost: 125, dividends: 12000 },
-  { id: '3', code: '2454', name: '聯發科', shares: 500, price: 1150, avgCost: 900, dividends: 25000 },
-  { id: '4', code: '2317', name: '鴻海', shares: 2000, price: 175, avgCost: 105, dividends: 10500 },
-  { id: '5', code: '2881', name: '富邦金', shares: 5000, price: 75, avgCost: 60, dividends: 18000 }
-];
-
-// --- 已實現初始資料 ---
-const initialRealized = [
-  { id: 'r1', date: '2023-10-15', code: '2603', name: '長榮', buyPrice: 100, sellPrice: 155, shares: 2000, dividends: 140000 },
-  { id: 'r2', date: '2024-02-20', code: '0056', name: '元大高股息', buyPrice: 32, sellPrice: 38, shares: 5000, dividends: 12000 },
-  { id: 'r3', date: '2023-12-05', code: '2303', name: '聯電', buyPrice: 45, sellPrice: 52, shares: 3000, dividends: 4500 }
-];
-
-// --- 配息紀錄初始資料 ---
-const initialDividendRecords = [
-  { id: 'd1', date: '2024-03-15', code: '2330', name: '台積電', perShare: 3.5, shares: 1000, amount: 3500 },
-  { id: 'd2', date: '2024-01-20', code: '0050', name: '元大台灣50', perShare: 3.0, shares: 3000, amount: 9000 },
-  { id: 'd3', date: '2023-12-15', code: '2330', name: '台積電', perShare: 3.0, shares: 1000, amount: 3000 },
-  { id: 'd4', date: '2024-07-10', code: '2454', name: '聯發科', perShare: 30.0, shares: 500, amount: 15000 },
-  { id: 'd5', date: '2023-08-15', code: '2881', name: '富邦金', perShare: 1.5, shares: 5000, amount: 7500 }
-];
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('unrealized');
-  const [portfolio, setPortfolio] = useState(initialPortfolio);
-  const [realizedPortfolio, setRealizedPortfolio] = useState(initialRealized);
-  const [dividendRecords, setDividendRecords] = useState(initialDividendRecords);
-  
-  const [isFetchingPrices, setIsFetchingPrices] = useState(false);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiReport, setAiReport] = useState(null);
-  const [aiSources, setAiSources] = useState([]);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // 新增與編輯表單狀態
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [formType, setFormType] = useState('unrealized'); // 'unrealized' | 'realized' | 'dividends'
-  const [formData, setFormData] = useState({});
-  
-  const [isFetchingName, setIsFetchingName] = useState(false);
-
-  // --- 計算屬性：未實現損益 ---
-  const enhancedPortfolio = useMemo(() => {
-    return portfolio.map(item => {
-      const marketValue = item.price * item.shares;
-      const holdingCost = -(item.avgCost * item.shares);
-      const estProfit = marketValue + holdingCost + item.dividends;
-      const profitRate = holdingCost !== 0 ? (estProfit / Math.abs(holdingCost)) * 100 : 0;
-      const breakeven = item.shares !== 0 ? (Math.abs(holdingCost) - item.dividends) / item.shares : 0;
-
-      return { ...item, marketValue, holdingCost, estProfit, profitRate, breakeven };
-    });
-  }, [portfolio]);
-
-  const summary = useMemo(() => {
-    const totalShares = enhancedPortfolio.reduce((sum, item) => sum + item.shares, 0);
-    const totalMarketValue = enhancedPortfolio.reduce((sum, item) => sum + item.marketValue, 0);
-    const totalHoldingCost = enhancedPortfolio.reduce((sum, item) => sum + item.holdingCost, 0);
-    const totalDividends = enhancedPortfolio.reduce((sum, item) => sum + item.dividends, 0);
-    const totalEstProfit = enhancedPortfolio.reduce((sum, item) => sum + item.estProfit, 0);
-    const totalProfitRate = totalHoldingCost !== 0 ? (totalEstProfit / Math.abs(totalHoldingCost)) * 100 : 0;
-
-    return { totalShares, totalMarketValue, totalHoldingCost, totalDividends, totalEstProfit, totalProfitRate };
-  }, [enhancedPortfolio]);
-
-  // --- 計算屬性：已實現損益 ---
-  const enhancedRealized = useMemo(() => {
-    return realizedPortfolio.map(item => {
-      const investedCost = item.buyPrice * item.shares;
-      const soldValue = item.sellPrice * item.shares;
-      const realizedProfit = (soldValue - investedCost) + item.dividends;
-      const profitRate = investedCost !== 0 ? (realizedProfit / investedCost) * 100 : 0;
-
-      return { ...item, investedCost, soldValue, realizedProfit, profitRate };
-    });
-  }, [realizedPortfolio]);
-
-  const realizedSummary = useMemo(() => {
-    const totalInvested = enhancedRealized.reduce((sum, item) => sum + item.investedCost, 0);
-    const totalSold = enhancedRealized.reduce((sum, item) => sum + item.soldValue, 0);
-    const totalDividends = enhancedRealized.reduce((sum, item) => sum + item.dividends, 0);
-    const totalProfit = enhancedRealized.reduce((sum, item) => sum + item.realizedProfit, 0);
-    const totalRate = totalInvested !== 0 ? (totalProfit / totalInvested) * 100 : 0;
-
-    return { totalInvested, totalSold, totalDividends, totalProfit, totalRate };
-  }, [enhancedRealized]);
-
-  // --- 計算屬性：配息紀錄 ---
-  const dividendSummary = useMemo(() => {
-    const totalAmount = dividendRecords.reduce((sum, item) => sum + item.amount, 0);
-    const currentYear = new Date().getFullYear();
-    const thisYearAmount = dividendRecords
-      .filter(item => new Date(item.date).getFullYear() === currentYear)
-      .reduce((sum, item) => sum + item.amount, 0);
-    return { totalAmount, thisYearAmount, count: dividendRecords.length };
-  }, [dividendRecords]);
-
-  // --- 抓取 Fugle 即時報價 ---
-  const fetchLatestPrices = async () => {
-    setIsFetchingPrices(true);
-    setErrorMsg('');
-    const apiKey = 'MDkwYmNjZWQtZDgwMC00OGQ1LWEyZTItMGE3YWM0ZjRmMGQ5IDg1ODMxM2I3LTlhYmYtNDc1Zi04YWIzLTI2MWIwZTQ4MWE1OA==';
-    
-    try {
-      const updatedPortfolio = [...portfolio];
-      let hasError = false;
-
-      for (let i = 0; i < updatedPortfolio.length; i++) {
-        const item = updatedPortfolio[i];
-        try {
-          const response = await fetch(`https://api.fugle.tw/marketdata/v1.0/stock/intraday/ticker/${item.code}`, {
-            method: 'GET',
-            headers: { 'X-API-KEY': apiKey }
-          });
-          
-          if (response.ok) {
-            const result = await response.json();
-            const quotePrice = 
-              result.lastPrice || 
-              result.previousClose || 
-              result.referencePrice || 
-              (result.trades && result.trades.length > 0 ? result.trades[0].price : null) || 
-              result.data?.quote?.lastPrice;
-
-            if (quotePrice) {
-              updatedPortfolio[i] = { ...item, price: quotePrice };
-            }
-          } else {
-            hasError = true;
-          }
-        } catch (error) {
-          hasError = true;
-        }
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
-      
-      setPortfolio(updatedPortfolio);
-
-      if (hasError) {
-         setErrorMsg('部分報價更新失敗。可能原因：API 呼叫次數達上限、代碼無效，或是瀏覽器跨域 (CORS) 安全阻擋。');
-      }
-    } finally {
-      setIsFetchingPrices(false);
-    }
-  };
-
-  // --- API 呼叫與退避重試邏輯 ---
-  const callGeminiApi = async (payload) => {
-    const apiKey = ""; // 執行環境會自動注入
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-    
-    const maxRetries = 5;
-    const delays = [1000, 2000, 4000, 8000, 16000];
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+    <div class="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 overflow-hidden relative">
         
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        return await response.json();
-      } catch (err) {
-        if (i === maxRetries - 1) throw err;
-        await new Promise(res => setTimeout(res, delays[i]));
-      }
-    }
-  };
-
-  // --- 執行 AI 健檢 ---
-  const handleRunHealthCheck = async () => {
-    setIsAiLoading(true);
-    setErrorMsg('');
-    setIsModalOpen(true);
-    setAiReport(null);
-    setAiSources([]);
-
-    const portfolioSummaryStr = enhancedPortfolio.map(item => 
-      `- ${item.code} ${item.name}: 股數 ${item.shares}, 均價 ${item.avgCost}, 現價 ${item.price}, 預估獲利 ${item.profitRate.toFixed(2)}%`
-    ).join('\n');
-
-    const promptText = `
-作為一名頂級的量化財經分析師，請使用最新的網路資訊與市場動態，為以下台股/美股投資組合進行深度健檢。
-
-【當前投資組合資料】
-${portfolioSummaryStr}
-總市值: ${summary.totalMarketValue.toLocaleString()} TWD
-總獲利率: ${summary.totalProfitRate.toFixed(2)}%
-
-【請提供以下三個面向的專業研判】
-1. 總體曝險分析 (評估目前的資金水位、系統性風險及大盤連動度)
-2. 板塊聯動性評估 (分析持股的產業分佈，如金融、科技、高股息ETF之間的關聯與潛在風險集中度)
-3. 汰弱留強具體建議 (明確指出哪些標的值得續抱或加碼，哪些標的存在風險應考慮減碼或停損，並說明理由)
-
-請使用專業但易懂的語氣，並確保資料基於您能搜尋到的最新市場趨勢。排版請使用適當的段落與標題。
-`;
-
-    const payload = {
-      contents: [{ parts: [{ text: promptText }] }],
-      tools: [{ google_search: {} }] 
-    };
-
-    try {
-      const result = await callGeminiApi(payload);
-      const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "無法生成分析報告，請稍後再試。";
-      
-      const sources = result.candidates?.[0]?.groundingMetadata?.groundingAttributions?.map(a => ({
-        uri: a.web?.uri,
-        title: a.web?.title
-      })) || [];
-
-      // 過濾重複來源
-      const uniqueSources = Array.from(new Set(sources.map(s => s.uri))).map(uri => sources.find(s => s.uri === uri));
-
-      setAiReport(text);
-      setAiSources(uniqueSources.filter(s => s.uri && s.title));
-    } catch (error) {
-      console.error("AI Error:", error);
-      setErrorMsg('呼叫 AI 分析服務失敗，請確認您的網路連線或稍後再試。');
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
-  // --- Markdown 格式化解析 ---
-  const formatMarkdown = (text) => {
-    if (!text) return null;
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="text-emerald-400 font-semibold">{part.slice(2, -2)}</strong>;
-      }
-      return <span key={i}>{part}</span>;
-    });
-  };
-
-  // --- 表單處理邏輯 ---
-  const openAddForm = (type) => {
-    setFormType(type);
-    const today = new Date().toISOString().split('T')[0];
-    if (type === 'unrealized') {
-      setFormData({ id: '', code: '', name: '', shares: '', price: '', avgCost: '', dividends: '' });
-    } else if (type === 'realized') {
-      setFormData({ id: '', date: today, code: '', name: '', buyPrice: '', sellPrice: '', shares: '', dividends: '' });
-    } else if (type === 'dividends') {
-      setFormData({ id: '', date: today, code: '', name: '', perShare: '', shares: '', amount: '' });
-    }
-    setIsFormOpen(true);
-  };
-
-  const openEditForm = (item, type) => {
-    setFormType(type);
-    setFormData({ ...item });
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = (id, type) => {
-    if (type === 'unrealized') {
-      setPortfolio(prev => prev.filter(p => p.id !== id));
-    } else if (type === 'realized') {
-      setRealizedPortfolio(prev => prev.filter(p => p.id !== id));
-    } else if (type === 'dividends') {
-      setDividendRecords(prev => prev.filter(p => p.id !== id));
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // --- 自動抓取資產名稱與現價 ---
-  const handleCodeBlur = async (e) => {
-    const code = e.target.value;
-    if (!code) return; // 若無代號則跳過抓取
-
-    setIsFetchingName(true);
-    const apiKey = 'MDkwYmNjZWQtZDgwMC00OGQ1LWEyZTItMGE3YWM0ZjRmMGQ5IDg1ODMxM2I3LTlhYmYtNDc1Zi04YWIzLTI2MWIwZTQ4MWE1OA==';
-    
-    try {
-      const response = await fetch(`https://api.fugle.tw/marketdata/v1.0/stock/intraday/ticker/${code}`, {
-        method: 'GET',
-        headers: { 'X-API-KEY': apiKey }
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        
-        // 擷取現價邏輯 (比照 fetchLatestPrices)
-        const quotePrice = 
-          result.lastPrice || 
-          result.previousClose || 
-          result.referencePrice || 
-          (result.trades && result.trades.length > 0 ? result.trades[0].price : null) || 
-          result.data?.quote?.lastPrice;
-
-        setFormData(prev => {
-          const updates = {};
-          
-          // 若尚未填寫名稱，且 API 有回傳名稱則帶入
-          if (!prev.name && result.name) {
-            updates.name = result.name;
-          }
-          
-          // 若為「現有持股」表單、尚未填寫現價，且 API 有回傳報價則帶入
-          if (formType === 'unrealized' && !prev.price && quotePrice) {
-            updates.price = quotePrice;
-          }
-          
-          // 只有當需要更新時才回傳新物件，避免不必要的重新渲染
-          return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
-        });
-      }
-    } catch (error) {
-      console.error('無法抓取資產資訊:', error);
-    } finally {
-      setIsFetchingName(false);
-    }
-  };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    let numericData = { ...formData };
-
-    // 依據表單型別將特定欄位轉為數值
-    if (formType === 'unrealized') {
-      numericData.shares = Number(formData.shares) || 0;
-      numericData.price = Number(formData.price) || 0;
-      numericData.avgCost = Number(formData.avgCost) || 0;
-      numericData.dividends = Number(formData.dividends) || 0;
-    } else if (formType === 'realized') {
-      numericData.buyPrice = Number(formData.buyPrice) || 0;
-      numericData.sellPrice = Number(formData.sellPrice) || 0;
-      numericData.shares = Number(formData.shares) || 0;
-      numericData.dividends = Number(formData.dividends) || 0;
-    } else if (formType === 'dividends') {
-      numericData.perShare = Number(formData.perShare) || 0;
-      numericData.shares = Number(formData.shares) || 0;
-      numericData.amount = Number(formData.amount) || 0;
-    }
-
-    if (formData.id) {
-      if (formType === 'unrealized') setPortfolio(prev => prev.map(p => p.id === formData.id ? numericData : p));
-      if (formType === 'realized') setRealizedPortfolio(prev => prev.map(p => p.id === formData.id ? numericData : p));
-      if (formType === 'dividends') setDividendRecords(prev => prev.map(p => p.id === formData.id ? numericData : p));
-    } else {
-      numericData.id = Date.now().toString(); // 生成簡單唯一ID
-      if (formType === 'unrealized') setPortfolio(prev => [...prev, numericData]);
-      if (formType === 'realized') setRealizedPortfolio(prev => [...prev, numericData]);
-      if (formType === 'dividends') setDividendRecords(prev => [...prev, numericData]);
-    }
-    setIsFormOpen(false);
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-400">
-              <Activity size={32} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-wide">投資組合健檢中心</h1>
-              <p className="text-slate-400 text-sm mt-1">即時追蹤您的資產狀況，並透過 AI 獲取最新市場洞察。</p>
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
-            {activeTab === 'unrealized' && (
-              <button 
-                onClick={fetchLatestPrices}
-                disabled={isFetchingPrices}
-                className="group flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-5 py-3 rounded-xl font-medium transition-all"
-              >
-                <RefreshCw size={18} className={isFetchingPrices ? "animate-spin" : ""} />
-                {isFetchingPrices ? "報價更新中..." : "抓取最新報價"}
-              </button>
-            )}
-            <button 
-              onClick={handleRunHealthCheck}
-              className="group flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-emerald-900/50"
-            >
-              <Search size={18} className="group-hover:rotate-12 transition-transform" />
-              執行 AI 深度健檢
-            </button>
-          </div>
-        </header>
-
-        {/* Tabs 切換 */}
-        <div className="flex space-x-2 bg-slate-800/50 p-1.5 rounded-xl border border-slate-700 w-fit">
-          <button
-            onClick={() => setActiveTab('unrealized')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-              activeTab === 'unrealized' 
-                ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' 
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
-            }`}
-          >
-            <Wallet size={18} />
-            現有持股 (未實現)
-          </button>
-          <button
-            onClick={() => setActiveTab('realized')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-              activeTab === 'realized' 
-                ? 'bg-blue-500/20 text-blue-400 shadow-sm' 
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
-            }`}
-          >
-            <History size={18} />
-            歷史績效 (已實現)
-          </button>
-          <button
-            onClick={() => setActiveTab('dividends')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-              activeTab === 'dividends' 
-                ? 'bg-amber-500/20 text-amber-400 shadow-sm' 
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
-            }`}
-          >
-            <Banknote size={18} />
-            配息紀錄
-          </button>
+        <!-- 全域載入中遮罩 -->
+        <div id="loadingOverlay" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex-col items-center justify-center hidden">
+            <svg class="animate-spin h-10 w-10 text-emerald-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p id="loadingText" class="text-emerald-400 font-medium">處理中...</p>
         </div>
 
-        {/* 錯誤訊息提示區 */}
-        {errorMsg && !isModalOpen && (
-          <div className="bg-red-900/40 border border-red-500/50 p-4 rounded-xl flex items-center gap-3 text-red-200 shadow-lg animate-in fade-in slide-in-from-top-2">
-            <AlertCircle className="shrink-0 text-red-400" />
-            <p className="flex-1 text-sm md:text-base">{errorMsg}</p>
-            <button onClick={() => setErrorMsg('')} className="p-1 hover:bg-red-800/50 rounded-lg transition-colors">
-              <X size={18} />
-            </button>
-          </div>
-        )}
+        <!-- 錯誤提示列 -->
+        <div id="errorBanner" class="hidden bg-red-900/50 border-l-4 border-red-500 p-4 text-red-200 text-sm">
+            <p id="errorText">發生錯誤</p>
+        </div>
+        <div id="successBanner" class="hidden bg-emerald-900/50 border-l-4 border-emerald-500 p-4 text-emerald-200 text-sm">
+            <p id="successText">操作成功</p>
+        </div>
 
-        {/* Summary Cards */}
-        {activeTab === 'unrealized' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2">
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <Landmark size={20} />
-                <span className="font-medium">當前總市值</span>
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {summary.totalMarketValue.toLocaleString()}
-              </div>
-            </div>
-            
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <PieChart size={20} />
-                <span className="font-medium">總持有成本</span>
-              </div>
-              <div className="text-3xl font-bold text-red-400">
-                {summary.totalHoldingCost.toLocaleString()}
-              </div>
-            </div>
-
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <TrendingUp size={20} />
-                <span className="font-medium">預估總損益</span>
-              </div>
-              <div className={`text-3xl font-bold ${summary.totalEstProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {summary.totalEstProfit >= 0 ? '+' : ''}{summary.totalEstProfit.toLocaleString()}
-              </div>
-            </div>
-
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <LineChart size={20} />
-                <span className="font-medium">預估獲利率</span>
-              </div>
-              <div className={`text-3xl font-bold ${summary.totalProfitRate >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {summary.totalProfitRate >= 0 ? '+' : ''}{summary.totalProfitRate.toFixed(2)}%
-              </div>
-            </div>
-
-            {/* 全域績效指標卡片 */}
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <PiggyBank size={20} />
-                <span className="font-medium">歷史總配息</span>
-              </div>
-              <div className="text-3xl font-bold text-emerald-300">
-                {summary.totalDividends.toLocaleString()}
-              </div>
-            </div>
-
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <Award size={20} />
-                <span className="font-medium">已實現總獲利</span>
-              </div>
-              <div className={`text-3xl font-bold ${realizedSummary.totalProfit >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                {realizedSummary.totalProfit >= 0 ? '+' : ''}{realizedSummary.totalProfit.toLocaleString()}
-              </div>
-            </div>
-
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <History size={20} />
-                <span className="font-medium">歷史獲利率</span>
-              </div>
-              <div className={`text-3xl font-bold ${realizedSummary.totalRate >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                {realizedSummary.totalRate >= 0 ? '+' : ''}{realizedSummary.totalRate.toFixed(2)}%
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'realized' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2">
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <CheckCircle2 size={20} />
-                <span className="font-medium">總變現價值</span>
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {realizedSummary.totalSold.toLocaleString()}
-              </div>
-            </div>
-            
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <PieChart size={20} />
-                <span className="font-medium">歷史總成本</span>
-              </div>
-              <div className="text-3xl font-bold text-slate-400">
-                {realizedSummary.totalInvested.toLocaleString()}
-              </div>
-            </div>
-
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <TrendingUp size={20} />
-                <span className="font-medium">已實現總獲利</span>
-              </div>
-              <div className={`text-3xl font-bold ${realizedSummary.totalProfit >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                {realizedSummary.totalProfit >= 0 ? '+' : ''}{realizedSummary.totalProfit.toLocaleString()}
-              </div>
-            </div>
-
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <LineChart size={20} />
-                <span className="font-medium">歷史獲利率</span>
-              </div>
-              <div className={`text-3xl font-bold ${realizedSummary.totalRate >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                {realizedSummary.totalRate >= 0 ? '+' : ''}{realizedSummary.totalRate.toFixed(2)}%
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'dividends' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-2">
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <PiggyBank size={20} />
-                <span className="font-medium">清單累計配息總額</span>
-              </div>
-              <div className="text-3xl font-bold text-amber-400">
-                {dividendSummary.totalAmount.toLocaleString()}
-              </div>
-            </div>
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-              <div className="flex items-center gap-3 text-slate-400 mb-2">
-                <Calendar size={20} />
-                <span className="font-medium">今年度配息收入</span>
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {dividendSummary.thisYearAmount.toLocaleString()}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Portfolio Tables */}
-        {activeTab === 'unrealized' && (
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4">
-            <div className="p-6 border-b border-slate-700 flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-semibold text-white">現有持股清單</h2>
-                <span className="text-sm text-slate-400">共 {enhancedPortfolio.length} 筆現有資產</span>
-              </div>
-              <button 
-                onClick={() => openAddForm('unrealized')}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all shadow-md shadow-emerald-900/20"
-              >
-                <PlusCircle size={16} /> 新增資產
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-slate-900/50 text-slate-300">
-                  <tr>
-                    <th className="p-4 font-medium">代號</th>
-                    <th className="p-4 font-medium">資產名稱</th>
-                    <th className="p-4 font-medium text-right">現價</th>
-                    <th className="p-4 font-medium text-right">規模(股)</th>
-                    <th className="p-4 font-medium text-right">建倉均價</th>
-                    <th className="p-4 font-medium text-right">當前市值</th>
-                    <th className="p-4 font-medium text-right">持有成本</th>
-                    <th className="p-4 font-medium text-right">歷史配息</th>
-                    <th className="p-4 font-medium text-right">預估損益</th>
-                    <th className="p-4 font-medium text-right">預估獲利率</th>
-                    <th className="p-4 font-medium text-right">損益平衡價</th>
-                    <th className="p-4 font-medium text-center">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/50">
-                  {enhancedPortfolio.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 font-medium text-emerald-400">{item.code}</td>
-                      <td className="p-4 text-slate-200">{item.name}</td>
-                      <td className="p-4 text-right">{item.price.toFixed(2)}</td>
-                      <td className="p-4 text-right">{item.shares.toLocaleString()}</td>
-                      <td className="p-4 text-right">{item.avgCost.toFixed(2)}</td>
-                      <td className="p-4 text-right">{item.marketValue.toLocaleString()}</td>
-                      <td className="p-4 text-right text-slate-400">{item.holdingCost.toLocaleString()}</td>
-                      <td className="p-4 text-right text-emerald-300/80">{item.dividends.toLocaleString()}</td>
-                      <td className={`p-4 text-right font-medium ${item.estProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {item.estProfit.toLocaleString()}
-                      </td>
-                      <td className={`p-4 text-right font-medium ${item.profitRate >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {item.profitRate.toFixed(2)}%
-                      </td>
-                      <td className="p-4 text-right text-slate-300">{item.breakeven.toFixed(2)}</td>
-                      <td className="p-4 text-center">
-                        <button onClick={() => openEditForm(item, 'unrealized')} className="p-1.5 text-blue-400 hover:bg-blue-400/20 rounded-md transition-colors mr-1" title="編輯">
-                          <Edit size={16} />
-                        </button>
-                        <button onClick={() => handleDelete(item.id, 'unrealized')} className="p-1.5 text-red-400 hover:bg-red-400/20 rounded-md transition-colors" title="刪除">
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {/* 合計列 */}
-                  <tr className="bg-slate-900/50 font-bold">
-                    <td className="p-4 text-slate-200" colSpan={3}>合計</td>
-                    <td className="p-4 text-right text-slate-200">{summary.totalShares.toLocaleString()}</td>
-                    <td className="p-4 text-right text-slate-400">—</td>
-                    <td className="p-4 text-right text-white">{summary.totalMarketValue.toLocaleString()}</td>
-                    <td className="p-4 text-right text-slate-400">{summary.totalHoldingCost.toLocaleString()}</td>
-                    <td className="p-4 text-right text-emerald-300/80">{summary.totalDividends.toLocaleString()}</td>
-                    <td className={`p-4 text-right ${summary.totalEstProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {summary.totalEstProfit.toLocaleString()}
-                    </td>
-                    <td className={`p-4 text-right ${summary.totalProfitRate >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {summary.totalProfitRate.toFixed(2)}%
-                    </td>
-                    <td className="p-4 text-right text-slate-400">—</td>
-                    <td className="p-4"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-        
-        {activeTab === 'realized' && (
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4">
-            <div className="p-6 border-b border-slate-700 flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-semibold text-white">已實現損益清單</h2>
-                <span className="text-sm text-slate-400">共 {enhancedRealized.length} 筆歷史交易</span>
-              </div>
-              <button 
-                onClick={() => openAddForm('realized')}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all shadow-md shadow-blue-900/20"
-              >
-                <PlusCircle size={16} /> 新增紀錄
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-slate-900/50 text-slate-300">
-                  <tr>
-                    <th className="p-4 font-medium">交易日期</th>
-                    <th className="p-4 font-medium">代號</th>
-                    <th className="p-4 font-medium">資產名稱</th>
-                    <th className="p-4 font-medium text-right">買進均價</th>
-                    <th className="p-4 font-medium text-right">賣出均價</th>
-                    <th className="p-4 font-medium text-right">規模(股)</th>
-                    <th className="p-4 font-medium text-right">投資成本</th>
-                    <th className="p-4 font-medium text-right">變現價值</th>
-                    <th className="p-4 font-medium text-right">期間配息</th>
-                    <th className="p-4 font-medium text-right">已實現損益</th>
-                    <th className="p-4 font-medium text-right">單筆獲利率</th>
-                    <th className="p-4 font-medium text-center">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/50">
-                  {enhancedRealized.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 text-slate-400">{item.date}</td>
-                      <td className="p-4 font-medium text-blue-400">{item.code}</td>
-                      <td className="p-4 text-slate-200">{item.name}</td>
-                      <td className="p-4 text-right text-slate-300">{item.buyPrice.toFixed(2)}</td>
-                      <td className="p-4 text-right text-white">{item.sellPrice.toFixed(2)}</td>
-                      <td className="p-4 text-right">{item.shares.toLocaleString()}</td>
-                      <td className="p-4 text-right text-slate-400">{item.investedCost.toLocaleString()}</td>
-                      <td className="p-4 text-right text-slate-200">{item.soldValue.toLocaleString()}</td>
-                      <td className="p-4 text-right text-emerald-300/80">{item.dividends.toLocaleString()}</td>
-                      <td className={`p-4 text-right font-medium ${item.realizedProfit >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                        {item.realizedProfit.toLocaleString()}
-                      </td>
-                      <td className={`p-4 text-right font-medium ${item.profitRate >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                        {item.profitRate.toFixed(2)}%
-                      </td>
-                      <td className="p-4 text-center">
-                        <button onClick={() => openEditForm(item, 'realized')} className="p-1.5 text-blue-400 hover:bg-blue-400/20 rounded-md transition-colors mr-1" title="編輯">
-                          <Edit size={16} />
-                        </button>
-                        <button onClick={() => handleDelete(item.id, 'realized')} className="p-1.5 text-red-400 hover:bg-red-400/20 rounded-md transition-colors" title="刪除">
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {/* 合計列 */}
-                  <tr className="bg-slate-900/50 font-bold">
-                    <td className="p-4 text-slate-200" colSpan={5}>合計</td>
-                    <td className="p-4 text-right text-slate-200">
-                      {enhancedRealized.reduce((sum, item) => sum + item.shares, 0).toLocaleString()}
-                    </td>
-                    <td className="p-4 text-right text-slate-400">{realizedSummary.totalInvested.toLocaleString()}</td>
-                    <td className="p-4 text-right text-white">{realizedSummary.totalSold.toLocaleString()}</td>
-                    <td className="p-4 text-right text-emerald-300/80">{realizedSummary.totalDividends.toLocaleString()}</td>
-                    <td className={`p-4 text-right ${realizedSummary.totalProfit >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                      {realizedSummary.totalProfit.toLocaleString()}
-                    </td>
-                    <td className={`p-4 text-right ${realizedSummary.totalRate >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                      {realizedSummary.totalRate.toFixed(2)}%
-                    </td>
-                    <td className="p-4"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'dividends' && (
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4">
-            <div className="p-6 border-b border-slate-700 flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-semibold text-white">現金配息紀錄</h2>
-                <span className="text-sm text-slate-400">共 {dividendSummary.count} 筆發放紀錄</span>
-              </div>
-              <button 
-                onClick={() => openAddForm('dividends')}
-                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all shadow-md shadow-amber-900/20"
-              >
-                <PlusCircle size={16} /> 新增配息
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-slate-900/50 text-slate-300">
-                  <tr>
-                    <th className="p-4 font-medium">發放日期</th>
-                    <th className="p-4 font-medium">代號</th>
-                    <th className="p-4 font-medium">資產名稱</th>
-                    <th className="p-4 font-medium text-right">每股配息</th>
-                    <th className="p-4 font-medium text-right">參與配息股數</th>
-                    <th className="p-4 font-medium text-right">實領總額</th>
-                    <th className="p-4 font-medium text-center">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/50">
-                  {dividendRecords.sort((a, b) => new Date(b.date) - new Date(a.date)).map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 text-slate-300">{item.date}</td>
-                      <td className="p-4 font-medium text-amber-400">{item.code}</td>
-                      <td className="p-4 text-slate-200">{item.name}</td>
-                      <td className="p-4 text-right text-emerald-300">{item.perShare.toFixed(3)}</td>
-                      <td className="p-4 text-right text-slate-300">{item.shares.toLocaleString()}</td>
-                      <td className="p-4 text-right font-bold text-amber-400">{item.amount.toLocaleString()}</td>
-                      <td className="p-4 text-center">
-                        <button onClick={() => openEditForm(item, 'dividends')} className="p-1.5 text-blue-400 hover:bg-blue-400/20 rounded-md transition-colors mr-1" title="編輯">
-                          <Edit size={16} />
-                        </button>
-                        <button onClick={() => handleDelete(item.id, 'dividends')} className="p-1.5 text-red-400 hover:bg-red-400/20 rounded-md transition-colors" title="刪除">
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="bg-slate-900/50 font-bold">
-                    <td className="p-4 text-slate-200" colSpan={5}>總計</td>
-                    <td className="p-4 text-right text-amber-400">{dividendSummary.totalAmount.toLocaleString()}</td>
-                    <td className="p-4"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* AI Analysis Modal */}
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-              
-              {/* Modal Header */}
-              <div className="flex justify-between items-center p-6 border-b border-slate-800 bg-slate-800/50">
-                <div className="flex items-center gap-3">
-                  <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400">
-                    <Activity size={24} />
-                  </div>
-                  <h3 className="text-xl font-bold text-white">AI 投資組合深度健檢</h3>
+        <div class="p-8">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                 </div>
-                <button 
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
+                <h1 class="text-2xl font-bold text-white">投資組合健檢中心</h1>
+                <p id="subTitle" class="text-slate-400 text-sm mt-2">請登入以繼續</p>
+            </div>
 
-              {/* Modal Body */}
-              <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-                {isAiLoading ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-4">
-                    <RefreshCw size={48} className="animate-spin text-emerald-500" />
-                    <p className="text-lg animate-pulse">正在透過 Search Grounding 聯網檢索最新市場動態...</p>
-                    <p className="text-sm opacity-60">這可能需要幾秒鐘的時間，請稍候。</p>
-                  </div>
-                ) : errorMsg ? (
-                  <div className="bg-red-900/30 border border-red-500/50 p-6 rounded-2xl flex items-start gap-4 text-red-200">
-                    <AlertCircle className="shrink-0 text-red-400" />
-                    <p>{errorMsg}</p>
-                  </div>
-                ) : aiReport ? (
-                  <div className="space-y-8">
-                    {/* 報告內容 */}
-                    <div className="prose prose-invert prose-emerald max-w-none text-slate-300 leading-relaxed whitespace-pre-wrap">
-                      {formatMarkdown(aiReport)}
+            <!-- ================= [登入畫面] ================= -->
+            <div id="loginView" class="view-section active">
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">電子信箱</label>
+                        <input type="email" id="loginEmail" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" placeholder="you@example.com">
                     </div>
-
-                    {/* 資料來源 (Grounding Sources) */}
-                    {aiSources.length > 0 && (
-                      <div className="mt-8 pt-6 border-t border-slate-800">
-                        <h4 className="text-sm font-semibold text-slate-400 mb-4 flex items-center gap-2">
-                          <Search size={16} />
-                          聯網參考來源 (Search Grounding)
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {aiSources.map((source, idx) => (
-                            <a 
-                              key={idx}
-                              href={source.uri}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors text-sm"
-                            >
-                              <ChevronRight size={16} className="text-emerald-500 shrink-0" />
-                              <span className="truncate text-slate-300 hover:text-emerald-400 transition-colors">
-                                {source.title || source.uri}
-                              </span>
-                            </a>
-                          ))}
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-sm font-medium text-slate-300">密碼</label>
+                            <button type="button" onclick="switchView('forgotView')" class="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">忘記密碼？</button>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        )}
+                        <input type="password" id="loginPassword" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg transition-colors mt-2">
+                        登入
+                    </button>
+                </form>
 
-        {/* 新增/編輯表單 Modal */}
-        {isFormOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
-              <div className="flex justify-between items-center p-5 border-b border-slate-700">
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  {formData.id ? <Edit size={20} className={formType === 'dividends' ? 'text-amber-400' : formType === 'realized' ? 'text-blue-400' : 'text-emerald-400'} /> : <PlusCircle size={20} className={formType === 'dividends' ? 'text-amber-400' : formType === 'realized' ? 'text-blue-400' : 'text-emerald-400'} />}
-                  {formData.id ? '編輯紀錄' : '新增紀錄'}
-                </h3>
-                <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-700">
-                  <X size={20} />
+                <div class="mt-6 relative flex items-center justify-center">
+                    <div class="border-t border-slate-700 w-full absolute"></div>
+                    <span class="bg-slate-800 px-3 text-sm text-slate-400 relative">或使用</span>
+                </div>
+
+                <button id="googleLoginBtn" class="mt-6 w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-medium py-2.5 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    Google 登入
                 </button>
-              </div>
-              <form onSubmit={handleFormSubmit} className="p-5 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  
-                  {/* 共用：代號與名稱 */}
-                  {(formType === 'realized' || formType === 'dividends') && (
-                    <div className="space-y-1.5 col-span-2 sm:col-span-1">
-                      <label className="text-sm font-medium text-slate-300">日期</label>
-                      <input required type="date" name="date" value={formData.date || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
-                    </div>
-                  )}
 
-                  <div className={`space-y-1.5 ${formType === 'unrealized' ? 'col-span-1' : 'col-span-2 sm:col-span-1'}`}>
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-slate-300">代號</label>
-                      {isFetchingName && (
-                        <span className="text-xs text-emerald-400 flex items-center gap-1">
-                          <RefreshCw size={12} className="animate-spin" /> 自動帶入中...
-                        </span>
-                      )}
-                    </div>
-                    <input required name="code" value={formData.code || ''} onChange={handleInputChange} onBlur={handleCodeBlur} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="輸入完點擊旁邊自動帶入名稱" />
-                  </div>
-                  
-                  <div className={`space-y-1.5 ${formType === 'unrealized' ? 'col-span-1' : 'col-span-2'}`}>
-                    <label className="text-sm font-medium text-slate-300">資產名稱</label>
-                    <input required name="name" value={formData.name || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. 台積電" />
-                  </div>
-
-                  {/* 依據表單型別渲染專屬欄位 */}
-                  {formType === 'unrealized' && (
-                    <>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-300">股數 (規模)</label>
-                        <input required type="number" step="1" name="shares" value={formData.shares || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. 1000" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-300">建倉均價</label>
-                        <input required type="number" step="0.01" name="avgCost" value={formData.avgCost || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. 600" />
-                      </div>
-                      <div className="space-y-1.5 col-span-2 sm:col-span-1">
-                        <label className="text-sm font-medium text-slate-300">現價 (可由API更新)</label>
-                        <input required type="number" step="0.01" name="price" value={formData.price || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. 800" />
-                      </div>
-                      <div className="space-y-1.5 col-span-2 sm:col-span-1">
-                        <label className="text-sm font-medium text-slate-300">歷史累計配息</label>
-                        <input required type="number" step="1" name="dividends" value={formData.dividends || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. 15000" />
-                      </div>
-                    </>
-                  )}
-
-                  {formType === 'realized' && (
-                    <>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-300">買進均價</label>
-                        <input required type="number" step="0.01" name="buyPrice" value={formData.buyPrice || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-300">賣出均價</label>
-                        <input required type="number" step="0.01" name="sellPrice" value={formData.sellPrice || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-300">交易股數</label>
-                        <input required type="number" step="1" name="shares" value={formData.shares || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-300">期間持有配息</label>
-                        <input required type="number" step="1" name="dividends" value={formData.dividends || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
-                      </div>
-                    </>
-                  )}
-
-                  {formType === 'dividends' && (
-                    <>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-300">每股配息</label>
-                        <input required type="number" step="0.001" name="perShare" value={formData.perShare || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-300">參與配息股數</label>
-                        <input required type="number" step="1" name="shares" value={formData.shares || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
-                      </div>
-                      <div className="space-y-1.5 col-span-2">
-                        <label className="text-sm font-medium text-slate-300">實領總額</label>
-                        <input required type="number" step="1" name="amount" value={formData.amount || ''} onChange={handleInputChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" />
-                      </div>
-                    </>
-                  )}
-
-                </div>
-                <div className="pt-4 flex justify-end gap-3">
-                  <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-700 transition-colors">
-                    取消
-                  </button>
-                  <button type="submit" className={`px-4 py-2 rounded-lg text-white font-medium transition-colors shadow-lg ${formType === 'dividends' ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/30' : formType === 'realized' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-900/30' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/30'}`}>
-                    {formData.id ? '儲存修改' : '儲存紀錄'}
-                  </button>
-                </div>
-              </form>
+                <p class="mt-8 text-center text-sm text-slate-400">
+                    還沒有帳號嗎？ 
+                    <button onclick="switchView('registerView')" class="text-emerald-400 hover:text-emerald-300 font-medium">註冊帳號</button>
+                </p>
             </div>
-          </div>
-        )}
 
-      </div>
-      
-      {/* 隱藏式滾動條樣式 */}
-      <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(30, 41, 59, 0.5);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(52, 211, 153, 0.3);
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(52, 211, 153, 0.5);
-        }
-      `}} />
+            <!-- ================= [註冊畫面] ================= -->
+            <div id="registerView" class="view-section">
+                <form id="registerForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">電子信箱</label>
+                        <input type="email" id="regEmail" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="you@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">密碼 (至少 6 個字元)</label>
+                        <input type="password" id="regPassword" required minlength="6" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg transition-colors mt-2">
+                        建立帳號
+                    </button>
+                </form>
+
+                <div class="mt-6 relative flex items-center justify-center">
+                    <div class="border-t border-slate-700 w-full absolute"></div>
+                    <span class="bg-slate-800 px-3 text-sm text-slate-400 relative">或使用</span>
+                </div>
+
+                <button id="googleRegBtn" class="mt-6 w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-medium py-2.5 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    Google 快速註冊
+                </button>
+
+                <p class="mt-8 text-center text-sm text-slate-400">
+                    已經有帳號了？ 
+                    <button onclick="switchView('loginView')" class="text-emerald-400 hover:text-emerald-300 font-medium">返回登入</button>
+                </p>
+            </div>
+
+            <!-- ================= [忘記密碼畫面] ================= -->
+            <div id="forgotView" class="view-section">
+                <p class="text-sm text-slate-300 mb-6 text-center">請輸入您註冊時使用的電子信箱，我們將發送重設密碼的連結給您。</p>
+                <form id="forgotForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">電子信箱</label>
+                        <input type="email" id="resetEmail" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="you@example.com">
+                    </div>
+                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-medium py-2.5 rounded-lg transition-colors mt-2">
+                        發送重設信件
+                    </button>
+                </form>
+                <p class="mt-8 text-center text-sm text-slate-400">
+                    記起密碼了？ 
+                    <button onclick="switchView('loginView')" class="text-emerald-400 hover:text-emerald-300 font-medium">返回登入</button>
+                </p>
+            </div>
+
+            <!-- ================= [登入成功/驗證畫面] ================= -->
+            <div id="successView" class="view-section text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">登入成功！</h2>
+                <p id="welcomeEmail" class="text-slate-400 mb-8">user@example.com</p>
+                
+                <button id="enterAppBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-emerald-900/50 flex items-center justify-center gap-2">
+                    進入投資組合健檢中心
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+
+                <button id="logoutBtn" class="mt-6 text-sm text-slate-400 hover:text-white transition-colors">
+                    登出帳號
+                </button>
+            </div>
+
+        </div>
     </div>
-  );
-}
+
+    <!-- ================= [Firebase 邏輯] ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            sendEmailVerification, 
+            sendPasswordResetEmail, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Firebase Configuration (使用者提供)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXPLpJWn4_gDYW2Bv0pfc3WcwOZtSleq0",
+            authDomain: "test-79c7f.firebaseapp.com",
+            projectId: "test-79c7f",
+            storageBucket: "test-79c7f.firebasestorage.app",
+            messagingSenderId: "1062032640680",
+            appId: "1:1062032640680:web:13a23c2588c6c94314109d",
+            measurementId: "G-SL57G1GMJF"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // 畫面切換與 UI 控制邏輯
+        window.switchView = (viewId) => {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            // 更新副標題
+            const subTitle = document.getElementById('subTitle');
+            if(viewId === 'loginView') subTitle.textContent = '請登入以繼續';
+            else if(viewId === 'registerView') subTitle.textContent = '建立您的專屬帳號';
+            else if(viewId === 'forgotView') subTitle.textContent = '重設您的密碼';
+            else if(viewId === 'successView') subTitle.textContent = '歡迎回來';
+            
+            clearMessages();
+        };
+
+        const setLoading = (isLoading, text = '處理中...') => {
+            const overlay = document.getElementById('loadingOverlay');
+            document.getElementById('loadingText').textContent = text;
+            if(isLoading) overlay.classList.replace('hidden', 'flex');
+            else overlay.classList.replace('flex', 'hidden');
+        };
+
+        const showError = (msg) => {
+            document.getElementById('errorText').textContent = msg;
+            document.getElementById('errorBanner').classList.remove('hidden');
+            setTimeout(() => document.getElementById('errorBanner').classList.add('hidden'), 5000);
+        };
+
+        const showSuccess = (msg) => {
+            document.getElementById('successText').textContent = msg;
+            document.getElementById('successBanner').classList.remove('hidden');
+            setTimeout(() => document.getElementById('successBanner').classList.add('hidden'), 5000);
+        };
+
+        const clearMessages = () => {
+            document.getElementById('errorBanner').classList.add('hidden');
+            document.getElementById('successBanner').classList.add('hidden');
+        };
+
+        // 翻譯 Firebase 錯誤代碼
+        const translateError = (error) => {
+            const code = error.code;
+            if(code === 'auth/invalid-email') return '電子信箱格式錯誤。';
+            if(code === 'auth/user-disabled') return '此帳號已被停用。';
+            if(code === 'auth/user-not-found' || code === 'auth/invalid-credential') return '帳號或密碼錯誤。';
+            if(code === 'auth/wrong-password') return '密碼錯誤。';
+            if(code === 'auth/email-already-in-use') return '此電子信箱已被註冊。';
+            if(code === 'auth/weak-password') return '密碼強度太弱，請至少輸入 6 個字元。';
+            if(code === 'auth/popup-closed-by-user') return 'Google 登入視窗已關閉。';
+            return `發生錯誤 (${code})，請稍後再試。`;
+        };
+
+        // 監聽登入狀態
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // 如果是信箱註冊但未驗證
+                if (user.providerData[0].providerId === 'password' && !user.emailVerified) {
+                    showError("請先至您的電子信箱點擊驗證連結，再進行登入。");
+                    signOut(auth);
+                    window.switchView('loginView');
+                    return;
+                }
+                document.getElementById('welcomeEmail').textContent = user.email;
+                window.switchView('successView');
+            } else {
+                window.switchView('loginView');
+            }
+        });
+
+        // 1. 信箱登入
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            setLoading(true, '登入中...');
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // 成功後會觸發 onAuthStateChanged
+            } catch (error) {
+                showError(translateError(error));
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // 2. 信箱註冊
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            setLoading(true, '建立帳號中...');
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                // 發送驗證信
+                await sendEmailVerification(userCredential.user);
+                await signOut(auth); // 註冊後先登出，強制要求驗證
+                showSuccess("註冊成功！我們已發送驗證信至您的信箱，請查收並驗證後再登入。");
+                window.switchView('loginView');
+            } catch (error) {
+                showError(translateError(error));
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // 3. 忘記密碼
+        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+            
+            setLoading(true, '發送信件中...');
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showSuccess("密碼重設信件已發送！請檢查您的收件匣。");
+                window.switchView('loginView');
+            } catch (error) {
+                showError(translateError(error));
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // 4. Google 登入/註冊 共用函式
+        const handleGoogleAuth = async () => {
+            setLoading(true, '正在呼叫 Google 驗證...');
+            try {
+                await signInWithPopup(auth, googleProvider);
+                // 成功後會觸發 onAuthStateChanged 跳轉
+            } catch (error) {
+                showError(translateError(error));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        document.getElementById('googleLoginBtn').addEventListener('click', handleGoogleAuth);
+        document.getElementById('googleRegBtn').addEventListener('click', handleGoogleAuth);
+
+        // 5. 進入系統按鈕
+        document.getElementById('enterAppBtn').addEventListener('click', () => {
+            setLoading(true, '正在載入系統模組...');
+            // 實務上這裡會是 window.location.href = '/app.html' 或載入 React 元件
+            setTimeout(() => {
+                alert("即將為您導向至【投資組合健檢中心 App.jsx】介面！\n\n(此為展示跳轉行為，實務中可配置路由)");
+                setLoading(false);
+            }, 1000);
+        });
+
+        // 6. 登出
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            setLoading(true, '登出中...');
+            try {
+                await signOut(auth);
+            } catch (error) {
+                showError("登出失敗");
+            } finally {
+                setLoading(false);
+            }
+        });
+    </script>
+</body>
+</html>
