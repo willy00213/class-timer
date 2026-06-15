@@ -1,0 +1,638 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithCustomToken, signOut } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from 'firebase/firestore';
+import { 
+  LineChart, Wallet, PieChart, TrendingUp, TrendingDown, 
+  Search, AlertCircle, RefreshCw, Plus, X, ChevronRight, Activity,
+  History, CheckCircle2, Landmark, PiggyBank, Award, Banknote, Calendar,
+  Edit2, Trash2, Save, ArrowRightLeft, LogOut
+} from 'lucide-react';
+
+// ================= [ Firebase 初始化設定 ] =================
+// 若在特定容器中執行會自動讀取 __firebase_config，否則使用您提供的預設配置
+// For Firestore資料庫設定物件: JS SDK v7.20.0 and later, measurementId is optional
+const defaultFirebaseConfig = {
+  apiKey: "AIzaSyAXPLpJWn4_gDYW2Bv0pfc3WcwOZtSleq0",
+  authDomain: "test-79c7f.firebaseapp.com",
+  projectId: "test-79c7f",
+  storageBucket: "test-79c7f.firebasestorage.app",
+  messagingSenderId: "1062032640680",
+  appId: "1:1062032640680:web:612bc3c2e36eb1ab14109d",
+  measurementId: "G-NG9BGKR78T"
+};
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// 修正權限錯誤：若在預覽環境中執行，必須使用系統注入的 __app_id，否則會遭到安全規則阻擋
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-vocab-app';
+
+// ================= [ 工具函式 ] =================
+const generateUUID = () => Math.random().toString(36).substring(2, 11) + '-' + Date.now().toString(36);
+const mockNameDictionary = {
+  '00878': '國泰永續高股息', '00922': '國泰台灣領袖50', '00923': '群益台ESG低碳50',
+  '00933B': '國泰10Y+金融債', '00937B': '群益ESG投等債20+', '009816': '凱基台灣TOP50',
+  '00989A': '主動摩根美國科技', '2324': '仁寶', '2887': '台新新光金', '1402': '遠東新',
+  '2330': '台積電', '2317': '鴻海', '2454': '聯發科', '0050': '元大台灣50', '0056': '元大高股息'
+};
+
+// ================= [ 主應用程式元件 ] =================
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [geminiApiKey, setGeminiApiKey] = useState("");
+
+  // 監聽登入狀態 & 初始化 Token
+  useEffect(() => {
+    const initAuth = async () => {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+      }
+    };
+    initAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setIsAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 當使用者登入後，獲取 Gemini API Key (來自 public/data/api/gemini)
+  useEffect(() => {
+    if (!user) return;
+    const fetchApiKey = async () => {
+      try {
+        const keyRef = doc(db, 'artifacts', appId, 'public', 'data', 'api', 'gemini');
+        const keySnap = await getDoc(keyRef);
+        if (keySnap.exists() && keySnap.data().key) {
+          setGeminiApiKey(keySnap.data().key);
+        } else {
+          console.warn("未能從資料庫找到 API Key，可能尚未配置。");
+        }
+      } catch (error) {
+        console.error("讀取 API Key 失敗:", error);
+      }
+    };
+    fetchApiKey();
+  }, [user]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+         <RefreshCw size={40} className="animate-spin text-emerald-500" />
+      </div>
+    );
+  }
+
+  // 根據是否有 user 決定顯示哪個介面
+  return user ? <DashboardView user={user} geminiApiKey={geminiApiKey} /> : <LoginView />;
+}
+
+// ================= [ 登入介面元件 (只保留 Google 登入) ] =================
+function LoginView() {
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setErrorMsg("");
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      setErrorMsg(`登入失敗: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-slate-900 min-h-screen flex items-center justify-center p-4 font-sans text-slate-100">
+      <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 overflow-hidden relative">
+        
+        {loading && (
+          <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+            <RefreshCw size={40} className="animate-spin text-emerald-500 mb-4" />
+            <p className="text-emerald-400 font-medium">驗證中...</p>
+          </div>
+        )}
+
+        {errorMsg && (
+          <div className="bg-red-900/80 border-l-4 border-red-500 p-4 text-red-200 text-sm relative">
+            <button onClick={() => setErrorMsg("")} className="absolute top-2 right-2 text-red-400 hover:text-red-200"><X size={16}/></button>
+            <p className="whitespace-pre-wrap pr-4 font-mono text-xs">{errorMsg}</p>
+          </div>
+        )}
+
+        <div className="p-8">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 mb-4">
+               <Activity size={32} />
+            </div>
+            <h1 className="text-2xl font-bold text-white">投資組合健檢中心</h1>
+            <p className="text-slate-400 text-sm mt-2">請登入以存取您的雲端財務資料庫</p>
+          </div>
+
+          <button 
+            onClick={handleGoogleLogin} 
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            使用 Google 帳號安全登入
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ================= [ 投資組合儀表板元件 ] =================
+function DashboardView({ user, geminiApiKey }) {
+  const [activeTab, setActiveTab] = useState('unrealized');
+  const [portfolio, setPortfolio] = useState([]);
+  const [realizedPortfolio, setRealizedPortfolio] = useState([]);
+  const [dividendRecords, setDividendRecords] = useState([]);
+  
+  const [isFetchingPrices, setIsFetchingPrices] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiReport, setAiReport] = useState(null);
+  const [aiSources, setAiSources] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
+  
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState('add');
+  const [isAutoFetching, setIsAutoFetching] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const [isTradeOpen, setIsTradeOpen] = useState(false);
+  const [tradeAsset, setTradeAsset] = useState(null);
+  const [tradeData, setTradeData] = useState({ id: '', type: 'buy', shares: '', price: '', date: new Date().toISOString().split('T')[0] });
+  
+  const initialFormState = {
+    id: '', date: new Date().toISOString().split('T')[0],
+    code: '', name: '', price: 0, previousClose: 0, shares: 0, avgCost: 0, dividends: 0,
+    buyPrice: 0, sellPrice: 0, perShare: 0, amount: 0,
+    ma7: 0, ma30: 0, ma90: 0, ma180: 0, ma365: 0
+  };
+  const [formData, setFormData] = useState(initialFormState);
+
+  // --- 綁定 Firestore 即時資料流 ---
+  useEffect(() => {
+    if (!user) return;
+    
+    // 從 users/{userId} 底下的三個獨立 collection 監聽資料
+    const unsubPortfolio = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'portfolio'), 
+      (snap) => setPortfolio(snap.docs.map(d => ({id: d.id, ...d.data()}))), 
+      (err) => console.error("讀取現有持股失敗:", err)
+    );
+    const unsubRealized = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'realizedPortfolio'), 
+      (snap) => setRealizedPortfolio(snap.docs.map(d => ({id: d.id, ...d.data()}))),
+      (err) => console.error("讀取實現損益失敗:", err)
+    );
+    const unsubDividends = onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'dividendRecords'), 
+      (snap) => setDividendRecords(snap.docs.map(d => ({id: d.id, ...d.data()}))),
+      (err) => console.error("讀取配息紀錄失敗:", err)
+    );
+
+    return () => { unsubPortfolio(); unsubRealized(); unsubDividends(); };
+  }, [user]);
+
+  // --- 統計計算屬性 ---
+  const enhancedPortfolio = useMemo(() => {
+    return portfolio.map(item => {
+      const marketValue = item.price * item.shares;
+      const holdingCost = -(item.avgCost * item.shares);
+      const estProfit = marketValue + holdingCost + item.dividends;
+      const profitRate = holdingCost !== 0 ? (estProfit / Math.abs(holdingCost)) * 100 : 0;
+      const breakeven = item.shares !== 0 ? (Math.abs(holdingCost) - item.dividends) / item.shares : 0;
+      const changeVal = item.price - (item.previousClose || item.price);
+      const changeRate = item.previousClose ? (changeVal / item.previousClose) * 100 : 0;
+      return { ...item, marketValue, holdingCost, estProfit, profitRate, breakeven, changeVal, changeRate };
+    });
+  }, [portfolio]);
+
+  const summary = useMemo(() => {
+    const totalShares = enhancedPortfolio.reduce((sum, item) => sum + item.shares, 0);
+    const totalMarketValue = enhancedPortfolio.reduce((sum, item) => sum + item.marketValue, 0);
+    const totalHoldingCost = enhancedPortfolio.reduce((sum, item) => sum + item.holdingCost, 0);
+    const totalDividends = enhancedPortfolio.reduce((sum, item) => sum + item.dividends, 0);
+    const totalEstProfit = enhancedPortfolio.reduce((sum, item) => sum + item.estProfit, 0);
+    const totalProfitRate = totalHoldingCost !== 0 ? (totalEstProfit / Math.abs(totalHoldingCost)) * 100 : 0;
+    return { totalShares, totalMarketValue, totalHoldingCost, totalDividends, totalEstProfit, totalProfitRate };
+  }, [enhancedPortfolio]);
+
+  const enhancedRealized = useMemo(() => {
+    return realizedPortfolio.map(item => {
+      const investedCost = item.buyPrice * item.shares;
+      const soldValue = item.sellPrice * item.shares;
+      const realizedProfit = (soldValue - investedCost) + item.dividends;
+      const profitRate = investedCost !== 0 ? (realizedProfit / investedCost) * 100 : 0;
+      return { ...item, investedCost, soldValue, realizedProfit, profitRate };
+    });
+  }, [realizedPortfolio]);
+
+  const realizedSummary = useMemo(() => {
+    const totalInvested = enhancedRealized.reduce((sum, item) => sum + item.investedCost, 0);
+    const totalSold = enhancedRealized.reduce((sum, item) => sum + item.soldValue, 0);
+    const totalDividends = enhancedRealized.reduce((sum, item) => sum + item.dividends, 0);
+    const totalProfit = enhancedRealized.reduce((sum, item) => sum + item.realizedProfit, 0);
+    const totalRate = totalInvested !== 0 ? (totalProfit / totalInvested) * 100 : 0;
+    return { totalInvested, totalSold, totalDividends, totalProfit, totalRate };
+  }, [enhancedRealized]);
+
+  const dividendSummary = useMemo(() => {
+    const totalAmount = dividendRecords.reduce((sum, item) => sum + item.amount, 0);
+    const currentYear = new Date().getFullYear();
+    const thisYearAmount = dividendRecords
+      .filter(item => new Date(item.date).getFullYear() === currentYear)
+      .reduce((sum, item) => sum + item.amount, 0);
+    return { totalAmount, thisYearAmount, count: dividendRecords.length };
+  }, [dividendRecords]);
+
+  // --- CRUD 寫入資料庫邏輯 ---
+  const handleOpenForm = (mode, item = null) => {
+    setFormMode(mode);
+    setFormData(mode === 'add' ? { ...initialFormState, date: new Date().toISOString().split('T')[0] } : { ...initialFormState, ...item });
+    setIsFormOpen(true);
+  };
+
+  const handleDeleteRequest = (id) => setDeleteTarget({ id, tab: activeTab });
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { id, tab } = deleteTarget;
+    const collName = tab === 'unrealized' ? 'portfolio' : tab === 'realized' ? 'realizedPortfolio' : 'dividendRecords';
+    
+    try {
+      await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, collName, id));
+      setDeleteTarget(null);
+    } catch(err) {
+      setErrorMsg("刪除失敗");
+    }
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const isNew = formMode === 'add';
+    const num = (val) => Number(val) || 0;
+    const payload = { ...formData, id: isNew ? generateUUID() : formData.id };
+
+    if (activeTab === 'unrealized') {
+      payload.price = num(payload.price);
+      payload.previousClose = num(payload.previousClose) || num(payload.price);
+      payload.shares = num(payload.shares);
+      payload.avgCost = num(payload.avgCost);
+      payload.dividends = num(payload.dividends);
+      payload.ma7 = num(payload.ma7) || payload.price;
+      payload.ma30 = num(payload.ma30) || payload.price;
+      payload.ma90 = num(payload.ma90) || payload.price;
+      payload.ma180 = num(payload.ma180) || payload.price;
+      payload.ma365 = num(payload.ma365) || payload.price;
+    } else if (activeTab === 'realized') {
+      payload.buyPrice = num(payload.buyPrice);
+      payload.sellPrice = num(payload.sellPrice);
+      payload.shares = num(payload.shares);
+      payload.dividends = num(payload.dividends);
+    } else if (activeTab === 'dividends') {
+      payload.perShare = num(payload.perShare);
+      payload.shares = num(payload.shares);
+      payload.amount = num(payload.amount);
+    }
+
+    try {
+      const collName = activeTab === 'unrealized' ? 'portfolio' : activeTab === 'realized' ? 'realizedPortfolio' : 'dividendRecords';
+      await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, collName, payload.id), payload);
+      setIsFormOpen(false);
+    } catch(err) {
+      setErrorMsg("儲存資料庫失敗");
+    }
+  };
+
+  const handleOpenTrade = (item) => {
+    setTradeAsset(item);
+    setTradeData({ id: item.id, type: 'buy', shares: '', price: item.price || '', date: new Date().toISOString().split('T')[0] });
+    setIsTradeOpen(true);
+    setErrorMsg('');
+  };
+
+  const handleTradeSubmit = async (e) => {
+    e.preventDefault();
+    const numShares = Number(tradeData.shares) || 0;
+    const tradePrice = Number(tradeData.price) || 0;
+    
+    if (numShares <= 0) return setErrorMsg("交易股數必須大於 0");
+
+    try {
+      const pRef = doc(db, 'artifacts', appId, 'users', user.uid, 'portfolio', tradeAsset.id);
+      if (tradeData.type === 'buy') {
+        const newShares = tradeAsset.shares + numShares;
+        const newAvgCost = ((tradeAsset.shares * tradeAsset.avgCost) + (numShares * tradePrice)) / newShares;
+        await setDoc(pRef, { ...tradeAsset, shares: newShares, avgCost: newAvgCost });
+      } else if (tradeData.type === 'sell') {
+        if (numShares > tradeAsset.shares) return setErrorMsg(`賣出股數不得大於現有持股數`);
+        
+        // 寫入已實現損益
+        const rRef = doc(db, 'artifacts', appId, 'users', user.uid, 'realizedPortfolio', generateUUID());
+        await setDoc(rRef, {
+          id: rRef.id, date: tradeData.date, code: tradeAsset.code, name: tradeAsset.name,
+          buyPrice: tradeAsset.avgCost, sellPrice: tradePrice, shares: numShares, dividends: 0, 
+        });
+
+        // 扣除現有持股
+        const remainingShares = tradeAsset.shares - numShares;
+        if (remainingShares > 0) {
+          await setDoc(pRef, { ...tradeAsset, shares: remainingShares });
+        } else {
+          await deleteDoc(pRef);
+        }
+      }
+      setIsTradeOpen(false);
+    } catch(err) {
+      setErrorMsg("交易執行失敗");
+    }
+  };
+
+  // --- 自動辨識與更新報價 ---
+  const handleCodeBlur = async () => {
+    if (!formData.code || formMode === 'edit') return;
+    setIsAutoFetching(true);
+    const fugleKey = 'MDkwYmNjZWQtZDgwMC00OGQ1LWEyZTItMGE3YWM0ZjRmMGQ5IDg1ODMxM2I3LTlhYmYtNDc1Zi04YWIzLTI2MWIwZTQ4MWE1OA==';
+    try {
+      const response = await fetch(`https://api.fugle.tw/marketdata/v1.0/stock/intraday/quote/${formData.code}`, {
+        method: 'GET', headers: { 'X-API-KEY': fugleKey }
+      });
+      let newPrice = formData.price, newPrevClose = formData.previousClose, newName = formData.name || mockNameDictionary[formData.code] || '';
+      if (response.ok) {
+        const result = await response.json();
+        newPrice = result.lastPrice || result.closePrice || result.referencePrice || formData.price;
+        newPrevClose = result.previousClose || newPrice;
+        if (result.name) newName = result.name;
+      }
+      setFormData(prev => ({ ...prev, price: activeTab === 'unrealized' ? Number(newPrice) : prev.price, previousClose: activeTab === 'unrealized' ? Number(newPrevClose) : prev.previousClose, name: newName }));
+    } catch (error) {
+      console.warn("自動抓取報價失敗:", error);
+    } finally { setIsAutoFetching(false); }
+  };
+
+  const fetchLatestPrices = async () => {
+    setIsFetchingPrices(true); setErrorMsg('');
+    const fugleKey = 'MDkwYmNjZWQtZDgwMC00OGQ1LWEyZTItMGE3YWM0ZjRmMGQ5IDg1ODMxM2I3LTlhYmYtNDc1Zi04YWIzLTI2MWIwZTQ4MWE1OA==';
+    let hasError = false;
+    for (let i = 0; i < portfolio.length; i++) {
+      const item = portfolio[i];
+      try {
+        const response = await fetch(`https://api.fugle.tw/marketdata/v1.0/stock/intraday/quote/${item.code}`, { headers: { 'X-API-KEY': fugleKey } });
+        if (response.ok) {
+          const result = await response.json();
+          const quotePrice = result.lastPrice || result.closePrice || result.referencePrice;
+          if (quotePrice) {
+            const variation = (Number(quotePrice) - item.price) * 0.1; 
+            await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'portfolio', item.id), {
+              ...item, price: Number(quotePrice), previousClose: Number(result.previousClose || quotePrice),
+              ma7: Number((item.ma7 + variation * 0.8).toFixed(2)), ma30: Number((item.ma30 + variation * 0.5).toFixed(2))
+            });
+          }
+        } else hasError = true;
+      } catch (error) { hasError = true; }
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    if (hasError) setErrorMsg('部分報價更新失敗。');
+    setIsFetchingPrices(false);
+  };
+
+  // --- AI 深度健檢 (使用 Firebase 取回的 Key) ---
+  const handleRunHealthCheck = async () => {
+    if (!geminiApiKey) {
+      setErrorMsg("缺乏 Gemini API Key！請確認已建立 artifacts/my-vocab-app/public/data/api/gemini 並且帶有 key 欄位。");
+      return;
+    }
+    setIsAiLoading(true); setErrorMsg(''); setIsAiModalOpen(true); setAiReport(null); setAiSources([]);
+
+    const portfolioSummaryStr = enhancedPortfolio.map(item => `- ${item.code} ${item.name}: 股數 ${item.shares}, 均價 ${item.avgCost.toFixed(2)}, 現價 ${item.price.toFixed(2)}, 預估獲利 ${item.profitRate.toFixed(2)}%`).join('\n');
+    const promptText = `作為一名頂級量化財經分析師，請為投資組合進行深度健檢。\n【當前持股資料】\n${portfolioSummaryStr}\n總市值: ${summary.totalMarketValue} TWD\n請提供：1. 總體曝險分析 2. 板塊聯動性評估 3. 汰弱留強具體建議。請使用繁體中文。`;
+
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`;
+      const response = await fetch(url, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }], tools: [{ google_search: {} }] })
+      });
+      const result = await response.json();
+      setAiReport(result.candidates?.[0]?.content?.parts?.[0]?.text || "無法生成報告。");
+      setAiSources((result.candidates?.[0]?.groundingMetadata?.groundingAttributions?.map(a => ({ uri: a.web?.uri, title: a.web?.title })) || []).filter(s => s.uri));
+    } catch (error) {
+      setErrorMsg('呼叫 AI 分析服務失敗。');
+    } finally { setIsAiLoading(false); }
+  };
+
+  const formatMarkdown = (text) => text?.split(/(\*\*.*?\*\*)/g).map((part, i) => part.startsWith('**') && part.endsWith('**') ? <strong key={i} className="text-emerald-400 font-semibold">{part.slice(2, -2)}</strong> : <span key={i}>{part}</span>);
+
+  const MaDisplay = ({ label, ma, price }) => (ma ? (
+    <div className={`flex justify-between items-center w-full min-w-[75px] ${price >= ma ? 'text-red-400 font-medium' : 'text-emerald-400'}`}>
+      <span>{label}</span><span className="font-mono">{ma.toFixed(2)}</span>
+    </div>
+  ) : null);
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8 font-sans">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-400"><Activity size={32} /></div>
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-wide">投資組合健檢中心</h1>
+              <p className="text-slate-400 text-sm mt-1">
+                Hi, {user.email || '使用者'} • 即時追蹤並同步至雲端資料庫
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
+            {activeTab === 'unrealized' && (
+              <button onClick={fetchLatestPrices} disabled={isFetchingPrices} className="group flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-5 py-3 rounded-xl font-medium transition-all">
+                <RefreshCw size={18} className={isFetchingPrices ? "animate-spin" : ""} /> {isFetchingPrices ? "更新中..." : "抓取最新報價"}
+              </button>
+            )}
+            <button onClick={handleRunHealthCheck} className="group flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-emerald-900/50">
+              <Search size={18} className="group-hover:rotate-12 transition-transform" /> 執行 AI 深度健檢
+            </button>
+            <button onClick={() => signOut(auth)} className="group flex items-center justify-center gap-2 bg-slate-800 border border-slate-600 hover:bg-slate-700 text-red-400 px-4 py-3 rounded-xl font-medium transition-all">
+              <LogOut size={18} />
+            </button>
+          </div>
+        </header>
+
+        {/* Tabs 與 新增按鈕 */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex space-x-2 bg-slate-800/50 p-1.5 rounded-xl border border-slate-700 w-fit">
+            <button onClick={() => setActiveTab('unrealized')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeTab === 'unrealized' ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}>
+              <Wallet size={18} /> 現有持股
+            </button>
+            <button onClick={() => setActiveTab('realized')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeTab === 'realized' ? 'bg-blue-500/20 text-blue-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}>
+              <History size={18} /> 已實現績效
+            </button>
+            <button onClick={() => setActiveTab('dividends')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeTab === 'dividends' ? 'bg-amber-500/20 text-amber-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}>
+              <Banknote size={18} /> 配息紀錄
+            </button>
+          </div>
+          <button onClick={() => handleOpenForm('add')} className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors border border-slate-600">
+            <Plus size={18} /> 新增{activeTab === 'unrealized' ? '資產' : activeTab === 'realized' ? '歷史紀錄' : '配息'}
+          </button>
+        </div>
+
+        {errorMsg && !isAiModalOpen && !isTradeOpen && (
+          <div className="bg-red-900/40 border border-red-500/50 p-4 rounded-xl flex items-center gap-3 text-red-200 shadow-lg">
+            <AlertCircle className="shrink-0 text-red-400" />
+            <p className="flex-1 text-sm md:text-base">{errorMsg}</p>
+            <button onClick={() => setErrorMsg('')} className="p-1 hover:bg-red-800/50 rounded-lg"><X size={18} /></button>
+          </div>
+        )}
+
+        {/* 頂部數據儀表板 */}
+        {activeTab === 'unrealized' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2">
+            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md"><div className="flex items-center gap-3 text-slate-400 mb-2"><Landmark size={20} /><span className="font-medium">當前總市值</span></div><div className="text-3xl font-bold text-white">{summary.totalMarketValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div></div>
+            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md"><div className="flex items-center gap-3 text-slate-400 mb-2"><PieChart size={20} /><span className="font-medium">總持有成本</span></div><div className="text-3xl font-bold text-slate-400">{summary.totalHoldingCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div></div>
+            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md"><div className="flex items-center gap-3 text-slate-400 mb-2"><TrendingUp size={20} /><span className="font-medium">預估總損益</span></div><div className={`text-3xl font-bold ${summary.totalEstProfit >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{summary.totalEstProfit >= 0 ? '+' : ''}{summary.totalEstProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div></div>
+            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md"><div className="flex items-center gap-3 text-slate-400 mb-2"><LineChart size={20} /><span className="font-medium">預估獲利率</span></div><div className={`text-3xl font-bold ${summary.totalProfitRate >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{summary.totalProfitRate >= 0 ? '+' : ''}{summary.totalProfitRate.toFixed(2)}%</div></div>
+          </div>
+        )}
+
+        {/* 資料清單 (節錄現有持股作為範例展示，其餘相似) */}
+        {activeTab === 'unrealized' && (
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4">
+            <div className="p-6 border-b border-slate-700 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-white">現有持股清單 (即時同步)</h2>
+              <span className="text-sm text-slate-400">共 {enhancedPortfolio.length} 筆資產</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-slate-900/50 text-slate-300">
+                  <tr>
+                    <th className="p-4 font-medium">代號 / 名稱</th>
+                    <th className="p-4 font-medium text-right">現價 (漲跌幅)</th>
+                    <th className="p-4 font-medium text-right">規模(股)</th>
+                    <th className="p-4 font-medium text-right">均價 / 損平</th>
+                    <th className="p-4 font-medium text-right">市值 / 成本</th>
+                    <th className="p-4 font-medium text-right">配息 / 預估損益</th>
+                    <th className="p-4 font-medium text-center">操作</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700/50">
+                  {enhancedPortfolio.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
+                      <td className="p-4"><div className="font-bold text-slate-200">{item.code}</div><div className="text-xs text-slate-400 mt-1">{item.name}</div></td>
+                      <td className="p-4 text-right"><div className="font-bold text-white text-base">{item.price.toFixed(2)}</div><div className={`text-xs font-semibold mt-1 ${item.changeRate >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{item.changeRate > 0 ? '+' : ''}{item.changeRate.toFixed(2)}%</div></td>
+                      <td className="p-4 text-right"><div className="text-slate-200 font-medium">{item.shares.toLocaleString()}</div></td>
+                      <td className="p-4 text-right"><div className="text-slate-300">{item.avgCost.toFixed(2)}</div><div className="text-xs text-slate-500 mt-1">{item.breakeven.toFixed(2)}</div></td>
+                      <td className="p-4 text-right"><div className="text-white font-medium">{item.marketValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div><div className="text-xs text-slate-500 mt-1">{item.holdingCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div></td>
+                      <td className="p-4 text-right"><div className="text-amber-400/80 text-xs mb-1">{item.dividends.toLocaleString()}</div><div className={`font-bold ${item.estProfit >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{item.estProfit > 0 ? '+' : ''}{item.estProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div><div className={`text-xs mt-0.5 ${item.profitRate >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{item.profitRate > 0 ? '+' : ''}{item.profitRate.toFixed(2)}%</div></td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button onClick={() => handleOpenTrade(item)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 rounded-xl"><ArrowRightLeft size={16}/></button>
+                          <button onClick={() => handleOpenForm('edit', item)} className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700 rounded-xl"><Edit2 size={16}/></button>
+                          <button onClick={() => handleDeleteRequest(item.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-xl"><Trash2 size={16}/></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* --- 自訂刪除確認 Modal --- */}
+        {deleteTarget && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col p-6">
+              <div className="flex items-center gap-3 mb-4 text-red-400"><AlertCircle size={28} /><h3 className="text-xl font-bold text-white">確認刪除</h3></div>
+              <p className="text-slate-300 mb-6 leading-relaxed">確定要刪除這筆紀錄嗎？此操作將<strong className="text-red-400">無法復原</strong>，且會從資料庫移除。</p>
+              <div className="flex justify-end gap-3 mt-2">
+                <button onClick={() => setDeleteTarget(null)} className="px-5 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-slate-700 transition-colors">取消</button>
+                <button onClick={handleConfirmDelete} className="px-5 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-500 transition-colors shadow-lg shadow-red-900/50 flex items-center gap-2"><Trash2 size={18} /> 確認刪除</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- 交易與表單 Modal 整合區 --- */}
+        {isFormOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+              <div className="flex justify-between items-center p-5 border-b border-slate-700 bg-slate-900/30">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  {formMode === 'add' ? <Plus size={20} className="text-emerald-400"/> : <Edit2 size={20} className="text-blue-400"/>}
+                  {formMode === 'add' ? '新增資料庫項目' : '編輯資料庫項目'}
+                </h3>
+                <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"><X size={20} /></button>
+              </div>
+              <form onSubmit={handleFormSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[70vh] custom-scrollbar">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-1 flex items-center justify-between">資產代號 {isAutoFetching && <RefreshCw size={12} className="animate-spin text-emerald-400" />}</label>
+                    <input type="text" required placeholder="如 00878" value={formData.code} onBlur={handleCodeBlur} onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-1">資產名稱</label>
+                    <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-1">建倉平均成本</label>
+                    <input type="number" step="any" required value={formData.avgCost} onChange={(e) => setFormData({...formData, avgCost: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-1">持有股數</label>
+                    <input type="number" required value={formData.shares} onChange={(e) => setFormData({...formData, shares: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
+                  </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-700 flex justify-end gap-3 bg-slate-900/10">
+                  <button type="button" onClick={() => setIsFormOpen(false)} className="px-5 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-slate-700 transition-colors">取消</button>
+                  <button type="submit" className={`px-6 py-2.5 rounded-xl font-medium text-white flex items-center gap-2 transition-colors shadow-lg bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/50`}>
+                    <Save size={18} /> 寫入資料庫
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* AI 健檢 Modal */}
+        {isAiModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="flex justify-between items-center p-6 border-b border-slate-800 bg-slate-800/50">
+                <div className="flex items-center gap-3"><div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400"><Activity size={24} /></div><h3 className="text-xl font-bold text-white">AI 投資組合深度健檢</h3></div>
+                <button onClick={() => setIsAiModalOpen(false)} className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"><X size={24} /></button>
+              </div>
+              <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+                {isAiLoading ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-4"><RefreshCw size={48} className="animate-spin text-emerald-500" /><p className="text-lg animate-pulse">正在透過 Search Grounding 聯網檢索最新市場動態...</p></div>
+                ) : aiReport ? (
+                  <div className="space-y-8 animate-in fade-in duration-300">
+                    <div className="prose prose-invert prose-emerald max-w-none text-slate-300 leading-relaxed whitespace-pre-wrap">{formatMarkdown(aiReport)}</div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(52, 211, 153, 0.3); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(52, 211, 153, 0.5); }
+      `}} />
+    </div>
+  );
+}
