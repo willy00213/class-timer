@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>投資組合健檢中心</title>
-    <!-- 引入 Tailwind CSS -->
+    <title>æŠ•è³‡çµ„åˆå¥æª¢ä¸­å¿ƒ</title>
+    <!-- å¼•å…¥ Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,17 +20,17 @@
             }
         }
     </script>
-    <!-- 引入 Babel 用於瀏覽器端即時編譯 JSX -->
+    <!-- å¼•å…¥ Babel ç”¨æ–¼ç€è¦½å™¨ç«¯å³æ™‚ç·¨è­¯ JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        /* 捲軸美化 */
+        /* æ²è»¸ç¾ŽåŒ– */
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(52, 211, 153, 0.3); border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(52, 211, 153, 0.5); }
         
-        /* 響應式點擊回饋 */
+        /* éŸ¿æ‡‰å¼é»žæ“Šå›žé¥‹ */
         .btn-active:active {
             transform: scale(0.98);
         }
@@ -38,10 +38,10 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30">
 
-    <!-- React 掛載點 -->
+    <!-- React æŽ›è¼‰é»ž -->
     <div id="root"></div>
 
-    <!-- 利用 ES Module + Import Map 動態載入 React 與 Lucide 圖標 -->
+    <!-- åˆ©ç”¨ ES Module + Import Map å‹•æ…‹è¼‰å…¥ React èˆ‡ Lucide åœ–æ¨™ -->
     <script type="importmap">
       {
         "imports": {
@@ -62,36 +62,36 @@
             Edit2, Trash2, Save, ArrowRightLeft
         } from 'lucide-react';
 
-        // --- 初始資料 ---
+        // --- åˆå§‹è³‡æ–™ ---
         const initialPortfolio = [
-            { id: '1', code: '00878', name: '國泰永續高股息', price: 33.00, previousClose: 32.60, shares: 2000, avgCost: 17.65, dividends: 13940, ma7: 32.8, ma30: 32.1, ma90: 30.5, ma180: 28.2, ma365: 25.4 },
-            { id: '2', code: '00922', name: '國泰台灣領袖50', price: 40.10, previousClose: 40.50, shares: 2000, avgCost: 16.92, dividends: 10085, ma7: 40.8, ma30: 39.5, ma90: 37.2, ma180: 34.1, ma365: 28.9 },
-            { id: '3', code: '00923', name: '群益台ESG低碳50', price: 42.70, previousClose: 42.00, shares: 1000, avgCost: 15.4, dividends: 4556, ma7: 42.1, ma30: 41.2, ma90: 38.6, ma180: 33.5, ma365: 29.1 },
-            { id: '4', code: '00933B', name: '國泰10Y+金融債', price: 16.05, previousClose: 16.01, shares: 1000, avgCost: 16.79, dividends: 1897, ma7: 15.9, ma30: 16.1, ma90: 16.3, ma180: 16.5, ma365: 16.2 },
-            { id: '5', code: '00937B', name: '群益ESG投等債20+', price: 14.95, previousClose: 15.10, shares: 2000, avgCost: 15.88, dividends: 2909, ma7: 15.1, ma30: 15.3, ma90: 15.6, ma180: 15.8, ma365: 15.5 },
-            { id: '6', code: '009816', name: '凱基台灣TOP50', price: 15.43, previousClose: 15.40, shares: 2000, avgCost: 10.45, dividends: 0, ma7: 15.2, ma30: 14.8, ma90: 13.5, ma180: 12.1, ma365: 10.9 },
-            { id: '7', code: '00989A', name: '主動摩根美國科技', price: 19.35, previousClose: 18.90, shares: 1000, avgCost: 16.86, dividends: 0, ma7: 19.0, ma30: 18.2, ma90: 17.1, ma180: 15.5, ma365: 13.2 },
-            { id: '8', code: '2324', name: '仁寶', price: 46.00, previousClose: 46.50, shares: 2000, avgCost: 23.33, dividends: 12800, ma7: 46.8, ma30: 45.1, ma90: 41.5, ma180: 38.2, ma365: 32.1 },
-            { id: '9', code: '2887', name: '台新新光金', price: 27.70, previousClose: 27.20, shares: 1040, avgCost: 17.13, dividends: 1536, ma7: 26.5, ma30: 24.8, ma90: 21.2, ma180: 18.5, ma365: 16.8 },
+            { id: '1', code: '00878', name: 'åœ‹æ³°æ°¸çºŒé«˜è‚¡æ¯', price: 33.00, previousClose: 32.60, shares: 2000, avgCost: 17.65, dividends: 13940, ma7: 32.8, ma30: 32.1, ma90: 30.5, ma180: 28.2, ma365: 25.4 },
+            { id: '2', code: '00922', name: 'åœ‹æ³°å°ç£é ˜è¢–50', price: 40.10, previousClose: 40.50, shares: 2000, avgCost: 16.92, dividends: 10085, ma7: 40.8, ma30: 39.5, ma90: 37.2, ma180: 34.1, ma365: 28.9 },
+            { id: '3', code: '00923', name: 'ç¾¤ç›Šå°ESGä½Žç¢³50', price: 42.70, previousClose: 42.00, shares: 1000, avgCost: 15.4, dividends: 4556, ma7: 42.1, ma30: 41.2, ma90: 38.6, ma180: 33.5, ma365: 29.1 },
+            { id: '4', code: '00933B', name: 'åœ‹æ³°10Y+é‡‘èžå‚µ', price: 16.05, previousClose: 16.01, shares: 1000, avgCost: 16.79, dividends: 1897, ma7: 15.9, ma30: 16.1, ma90: 16.3, ma180: 16.5, ma365: 16.2 },
+            { id: '5', code: '00937B', name: 'ç¾¤ç›ŠESGæŠ•ç­‰å‚µ20+', price: 14.95, previousClose: 15.10, shares: 2000, avgCost: 15.88, dividends: 2909, ma7: 15.1, ma30: 15.3, ma90: 15.6, ma180: 15.8, ma365: 15.5 },
+            { id: '6', code: '009816', name: 'å‡±åŸºå°ç£TOP50', price: 15.43, previousClose: 15.40, shares: 2000, avgCost: 10.45, dividends: 0, ma7: 15.2, ma30: 14.8, ma90: 13.5, ma180: 12.1, ma365: 10.9 },
+            { id: '7', code: '00989A', name: 'ä¸»å‹•æ‘©æ ¹ç¾Žåœ‹ç§‘æŠ€', price: 19.35, previousClose: 18.90, shares: 1000, avgCost: 16.86, dividends: 0, ma7: 19.0, ma30: 18.2, ma90: 17.1, ma180: 15.5, ma365: 13.2 },
+            { id: '8', code: '2324', name: 'ä»å¯¶', price: 46.00, previousClose: 46.50, shares: 2000, avgCost: 23.33, dividends: 12800, ma7: 46.8, ma30: 45.1, ma90: 41.5, ma180: 38.2, ma365: 32.1 },
+            { id: '9', code: '2887', name: 'å°æ–°æ–°å…‰é‡‘', price: 27.70, previousClose: 27.20, shares: 1040, avgCost: 17.13, dividends: 1536, ma7: 26.5, ma30: 24.8, ma90: 21.2, ma180: 18.5, ma365: 16.8 },
         ];
 
         const initialRealized = [
-            { id: 'r1', date: '2026-06-05', code: '2887', name: '台新新光金', buyPrice: 17.13, sellPrice: 28.45, shares: 1000, dividends: 0 },
-            { id: 'r2', date: '2026-06-03', code: '1402', name: '遠東新', buyPrice: 25.00, sellPrice: 27.3, shares: 1000, dividends: 0 },
+            { id: 'r1', date: '2026-06-05', code: '2887', name: 'å°æ–°æ–°å…‰é‡‘', buyPrice: 17.13, sellPrice: 28.45, shares: 1000, dividends: 0 },
+            { id: 'r2', date: '2026-06-03', code: '1402', name: 'é æ±æ–°', buyPrice: 25.00, sellPrice: 27.3, shares: 1000, dividends: 0 },
         ];
 
         const initialDividendRecords = [
-            { id: 'd1', date: '2026-05-15', code: '00878', name: '國泰永續高股息', perShare: 0.51, shares: 2000, amount: 1020 },
-            { id: 'd2', date: '2026-04-18', code: '00937B', name: '群益ESG投等債20+', perShare: 0.084, shares: 2000, amount: 168 },
-            { id: 'd3', date: '2025-10-24', code: '00922', name: '國泰台灣領袖50', perShare: 1.0, shares: 2000, amount: 2000 },
-            { id: 'd4', date: '2026-06-05', code: '2324', name: '仁寶', perShare: 1.2, shares: 2000, amount: 2400 },
+            { id: 'd1', date: '2026-05-15', code: '00878', name: 'åœ‹æ³°æ°¸çºŒé«˜è‚¡æ¯', perShare: 0.51, shares: 2000, amount: 1020 },
+            { id: 'd2', date: '2026-04-18', code: '00937B', name: 'ç¾¤ç›ŠESGæŠ•ç­‰å‚µ20+', perShare: 0.084, shares: 2000, amount: 168 },
+            { id: 'd3', date: '2025-10-24', code: '00922', name: 'åœ‹æ³°å°ç£é ˜è¢–50', perShare: 1.0, shares: 2000, amount: 2000 },
+            { id: 'd4', date: '2026-06-05', code: '2324', name: 'ä»å¯¶', perShare: 1.2, shares: 2000, amount: 2400 },
         ];
 
         const mockNameDictionary = {
-            '00878': '國泰永續高股息', '00922': '國泰台灣領袖50', '00923': '群益台ESG低碳50',
-            '00933B': '國泰10Y+金融債', '00937B': '群益ESG投等債20+', '009816': '凱基台灣TOP50',
-            '00989A': '主動摩根美國科技', '2324': '仁寶', '2887': '台新新光金', '1402': '遠東新',
-            '2330': '台積電', '2317': '鴻海', '2454': '聯發科', '0050': '元大台灣50', '0056': '元大高股息'
+            '00878': 'åœ‹æ³°æ°¸çºŒé«˜è‚¡æ¯', '00922': 'åœ‹æ³°å°ç£é ˜è¢–50', '00923': 'ç¾¤ç›Šå°ESGä½Žç¢³50',
+            '00933B': 'åœ‹æ³°10Y+é‡‘èžå‚µ', '00937B': 'ç¾¤ç›ŠESGæŠ•ç­‰å‚µ20+', '009816': 'å‡±åŸºå°ç£TOP50',
+            '00989A': 'ä¸»å‹•æ‘©æ ¹ç¾Žåœ‹ç§‘æŠ€', '2324': 'ä»å¯¶', '2887': 'å°æ–°æ–°å…‰é‡‘', '1402': 'é æ±æ–°',
+            '2330': 'å°ç©é›»', '2317': 'é´»æµ·', '2454': 'è¯ç™¼ç§‘', '0050': 'å…ƒå¤§å°ç£50', '0056': 'å…ƒå¤§é«˜è‚¡æ¯'
         };
 
         const generateUUID = () => {
@@ -109,14 +109,14 @@
             const [aiSources, setAiSources] = useState([]);
             const [errorMsg, setErrorMsg] = useState('');
             
-            // --- 表單與 Modal 狀態 ---
+            // --- è¡¨å–®èˆ‡ Modal ç‹€æ…‹ ---
             const [isAiModalOpen, setIsAiModalOpen] = useState(false);
             const [isFormOpen, setIsFormOpen] = useState(false);
             const [formMode, setFormMode] = useState('add');
             const [isAutoFetching, setIsAutoFetching] = useState(false);
             const [deleteTarget, setDeleteTarget] = useState(null);
 
-            // --- 交易 (加/減碼) 專屬狀態 ---
+            // --- äº¤æ˜“ (åŠ /æ¸›ç¢¼) å°ˆå±¬ç‹€æ…‹ ---
             const [isTradeOpen, setIsTradeOpen] = useState(false);
             const [tradeAsset, setTradeAsset] = useState(null);
             const [tradeData, setTradeData] = useState({
@@ -131,7 +131,7 @@
             };
             const [formData, setFormData] = useState(initialFormState);
 
-            // --- 統計計算屬性 ---
+            // --- çµ±è¨ˆè¨ˆç®—å±¬æ€§ ---
             const enhancedPortfolio = useMemo(() => {
                 return portfolio.map(item => {
                     const marketValue = item.price * item.shares;
@@ -185,7 +185,7 @@
                 return { totalAmount, thisYearAmount, count: dividendRecords.length };
             }, [dividendRecords]);
 
-            // --- CRUD 操作邏輯 ---
+            // --- CRUD æ“ä½œé‚è¼¯ ---
             const handleOpenForm = (mode, item = null) => {
                 setFormMode(mode);
                 if (mode === 'add') {
@@ -247,7 +247,7 @@
                 setIsFormOpen(false);
             };
 
-            // --- 加/減碼交易處理 ---
+            // --- åŠ /æ¸›ç¢¼äº¤æ˜“è™•ç† ---
             const handleOpenTrade = (item) => {
                 setTradeAsset(item);
                 setTradeData({
@@ -267,7 +267,7 @@
                 const tradePrice = Number(tradeData.price) || 0;
                 
                 if (numShares <= 0) {
-                    setErrorMsg("交易股數必須大於 0");
+                    setErrorMsg("äº¤æ˜“è‚¡æ•¸å¿…é ˆå¤§æ–¼ 0");
                     setIsTradeOpen(false);
                     return;
                 }
@@ -283,7 +283,7 @@
                     }));
                 } else if (tradeData.type === 'sell') {
                     if (numShares > tradeAsset.shares) {
-                        setErrorMsg(`賣出股數 (${numShares}) 不得大於現有持股數 (${tradeAsset.shares})`);
+                        setErrorMsg(`è³£å‡ºè‚¡æ•¸ (${numShares}) ä¸å¾—å¤§æ–¼ç¾æœ‰æŒè‚¡æ•¸ (${tradeAsset.shares})`);
                         setIsTradeOpen(false);
                         return;
                     }
@@ -313,7 +313,7 @@
                 setIsTradeOpen(false);
             };
 
-            // --- 富果行情 API (Code 模糊查詢) ---
+            // --- å¯Œæžœè¡Œæƒ… API (Code æ¨¡ç³ŠæŸ¥è©¢) ---
             const handleCodeBlur = async () => {
                 if (!formData.code || formMode === 'edit') return;
                 setIsAutoFetching(true);
@@ -342,13 +342,13 @@
                         name: newName
                     }));
                 } catch (error) {
-                    console.warn("自動抓取行情報報失敗:", error);
+                    console.warn("è‡ªå‹•æŠ“å–è¡Œæƒ…å ±å ±å¤±æ•—:", error);
                 } finally {
                     setIsAutoFetching(false);
                 }
             };
 
-            // --- 批次抓取最新報價 ---
+            // --- æ‰¹æ¬¡æŠ“å–æœ€æ–°å ±åƒ¹ ---
             const fetchLatestPrices = async () => {
                 setIsFetchingPrices(true);
                 setErrorMsg('');
@@ -383,23 +383,23 @@
                         await new Promise(resolve => setTimeout(resolve, 300));
                     }
                     setPortfolio(updatedPortfolio);
-                    if (hasError) setErrorMsg('部分報價更新失敗。可能原因：代碼不存在、API 頻率受限或跨網域 CORS 問題。');
+                    if (hasError) setErrorMsg('éƒ¨åˆ†å ±åƒ¹æ›´æ–°å¤±æ•—ã€‚å¯èƒ½åŽŸå› ï¼šä»£ç¢¼ä¸å­˜åœ¨ã€API é »çŽ‡å—é™æˆ–è·¨ç¶²åŸŸ CORS å•é¡Œã€‚');
                 } finally {
                     setIsFetchingPrices(false);
                 }
             };
 
-            // --- 指數退避重試的通用 Fetch 函式 (Gemini 專用) ---
+            // --- æŒ‡æ•¸é€€é¿é‡è©¦çš„é€šç”¨ Fetch å‡½å¼ (Gemini å°ˆç”¨) ---
             const fetchWithBackoff = async (url, options, retries = 5, delay = 1000) => {
                 try {
                     const response = await fetch(url, options);
                     if (!response.ok) {
-                        throw new Error(`HTTP 錯誤！狀態碼: ${response.status}`);
+                        throw new Error(`HTTP éŒ¯èª¤ï¼ç‹€æ…‹ç¢¼: ${response.status}`);
                     }
                     return await response.json();
                 } catch (error) {
                     if (retries > 0) {
-                        // 指數加倍延遲
+                        // æŒ‡æ•¸åŠ å€å»¶é²
                         await new Promise(resolve => setTimeout(resolve, delay));
                         return fetchWithBackoff(url, options, retries - 1, delay * 2);
                     } else {
@@ -408,7 +408,7 @@
                 }
             };
 
-            // --- AI 深度健檢諮詢處理 ---
+            // --- AI æ·±åº¦å¥æª¢è«®è©¢è™•ç† ---
             const handleRunHealthCheck = async () => {
                 setIsAiLoading(true);
                 setErrorMsg('');
@@ -417,13 +417,13 @@
                 setAiSources([]);
 
                 const portfolioSummaryStr = enhancedPortfolio.map(item => 
-                    `- ${item.code} ${item.name}: 股數 ${item.shares}, 均價 ${item.avgCost}, 現價 ${item.price}, 預估獲利 ${item.profitRate.toFixed(2)}%`
+                    `- ${item.code} ${item.name}: è‚¡æ•¸ ${item.shares}, å‡åƒ¹ ${item.avgCost}, ç¾åƒ¹ ${item.price}, é ä¼°ç²åˆ© ${item.profitRate.toFixed(2)}%`
                 ).join('\n');
 
                 const promptText = `
-作為一名頂級量化財經分析師，請為投資組合進行深度健檢。
-【當前持股資料】\n${portfolioSummaryStr}\n總市值: ${summary.totalMarketValue} TWD\n
-請提供：1. 總體曝險分析 2. 板塊聯動性評估 3. 汰弱留強具體建議。請使用繁體中文。
+ä½œç‚ºä¸€åé ‚ç´šé‡åŒ–è²¡ç¶“åˆ†æžå¸«ï¼Œè«‹ç‚ºæŠ•è³‡çµ„åˆé€²è¡Œæ·±åº¦å¥æª¢ã€‚
+ã€ç•¶å‰æŒè‚¡è³‡æ–™ã€‘\n${portfolioSummaryStr}\nç¸½å¸‚å€¼: ${summary.totalMarketValue} TWD\n
+è«‹æä¾›ï¼š1. ç¸½é«”æ›éšªåˆ†æž 2. æ¿å¡Šè¯å‹•æ€§è©•ä¼° 3. æ±°å¼±ç•™å¼·å…·é«”å»ºè­°ã€‚è«‹ä½¿ç”¨ç¹é«”ä¸­æ–‡ã€‚
 `;
                 try {
                     const apiKey = "";
@@ -438,14 +438,14 @@
                         })
                     });
 
-                    const text = responseData.candidates?.[0]?.content?.parts?.[0]?.text || "無法生成分析報告，請稍後再試。";
+                    const text = responseData.candidates?.[0]?.content?.parts?.[0]?.text || "ç„¡æ³•ç”Ÿæˆåˆ†æžå ±å‘Šï¼Œè«‹ç¨å¾Œå†è©¦ã€‚";
                     const sources = responseData.candidates?.[0]?.groundingMetadata?.groundingAttributions?.map(a => ({ uri: a.web?.uri, title: a.web?.title })) || [];
                     const uniqueSources = Array.from(new Set(sources.map(s => s.uri))).map(uri => sources.find(s => s.uri === uri));
                     
                     setAiReport(text);
                     setAiSources(uniqueSources.filter(s => s.uri && s.title));
                 } catch (error) {
-                    setErrorMsg('呼叫 AI 分析服務失敗（已重試5次），請確認您的網路連線或稍後再試。');
+                    setErrorMsg('å‘¼å« AI åˆ†æžæœå‹™å¤±æ•—ï¼ˆå·²é‡è©¦5æ¬¡ï¼‰ï¼Œè«‹ç¢ºèªæ‚¨çš„ç¶²è·¯é€£ç·šæˆ–ç¨å¾Œå†è©¦ã€‚');
                 } finally {
                     setIsAiLoading(false);
                 }
@@ -453,7 +453,7 @@
 
             const formatMarkdown = (text) => {
                 if (!text) return null;
-                // 解析 Markdown 特殊樣式（如 ** 粗體）
+                // è§£æž Markdown ç‰¹æ®Šæ¨£å¼ï¼ˆå¦‚ ** ç²—é«”ï¼‰
                 return text.split(/(\*\*.*?\*\*)/g).map((part, i) => 
                     part.startsWith('**') && part.endsWith('**') 
                         ? <strong key={i} className="text-emerald-400 font-semibold">{part.slice(2, -2)}</strong> 
@@ -483,8 +483,8 @@
                                     <Activity size={32} />
                                 </div>
                                 <div>
-                                    <h1 className="text-2xl font-bold text-white tracking-wide">投資組合健檢中心</h1>
-                                    <p className="text-slate-400 text-sm mt-1">即時追蹤您的資產狀況，並透過 AI 獲取最新市場洞察。</p>
+                                    <h1 className="text-2xl font-bold text-white tracking-wide">æŠ•è³‡çµ„åˆå¥æª¢ä¸­å¿ƒ</h1>
+                                    <p className="text-slate-400 text-sm mt-1">å³æ™‚è¿½è¹¤æ‚¨çš„è³‡ç”¢ç‹€æ³ï¼Œä¸¦é€éŽ AI ç²å–æœ€æ–°å¸‚å ´æ´žå¯Ÿã€‚</p>
                                 </div>
                             </div>
                             <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
@@ -494,19 +494,19 @@
                                         className="btn-active group flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-5 py-3 rounded-xl font-medium transition-all"
                                     >
                                         <RefreshCw size={18} className={isFetchingPrices ? "animate-spin" : ""} />
-                                        {isFetchingPrices ? "更新中..." : "抓取最新報價"}
+                                        {isFetchingPrices ? "æ›´æ–°ä¸­..." : "æŠ“å–æœ€æ–°å ±åƒ¹"}
                                     </button>
                                 )}
                                 <button 
                                     onClick={handleRunHealthCheck}
                                     className="btn-active group flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-emerald-900/50"
                                 >
-                                    <Search size={18} className="group-hover:rotate-12 transition-transform" /> 執行 AI 深度健檢
+                                    <Search size={18} className="group-hover:rotate-12 transition-transform" /> åŸ·è¡Œ AI æ·±åº¦å¥æª¢
                                 </button>
                             </div>
                         </header>
 
-                        {/* Tabs 與 新增按鈕 */}
+                        {/* Tabs èˆ‡ æ–°å¢žæŒ‰éˆ• */}
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div className="flex space-x-2 bg-slate-800/50 p-1.5 rounded-xl border border-slate-700 w-fit">
                                 <button
@@ -515,7 +515,7 @@
                                         activeTab === 'unrealized' ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
                                     }`}
                                 >
-                                    <Wallet size={18} /> 現有持股
+                                    <Wallet size={18} /> ç¾æœ‰æŒè‚¡
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('realized')}
@@ -523,7 +523,7 @@
                                         activeTab === 'realized' ? 'bg-blue-500/20 text-blue-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
                                     }`}
                                 >
-                                    <History size={18} /> 已實現績效
+                                    <History size={18} /> å·²å¯¦ç¾ç¸¾æ•ˆ
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('dividends')}
@@ -531,7 +531,7 @@
                                         activeTab === 'dividends' ? 'bg-amber-500/20 text-amber-400 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
                                     }`}
                                 >
-                                    <Banknote size={18} /> 配息紀錄
+                                    <Banknote size={18} /> é…æ¯ç´€éŒ„
                                 </button>
                             </div>
 
@@ -540,7 +540,7 @@
                                 className="btn-active flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors border border-slate-600"
                             >
                                 <Plus size={18} /> 
-                                新增{activeTab === 'unrealized' ? '資產' : activeTab === 'realized' ? '歷史紀錄' : '配息'}
+                                æ–°å¢ž{activeTab === 'unrealized' ? 'è³‡ç”¢' : activeTab === 'realized' ? 'æ­·å²ç´€éŒ„' : 'é…æ¯'}
                             </button>
                         </div>
 
@@ -552,43 +552,43 @@
                             </div>
                         )}
 
-                        {/* 頂部數據儀表板 */}
+                        {/* é ‚éƒ¨æ•¸æ“šå„€è¡¨æ¿ */}
                         {activeTab === 'unrealized' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><Landmark size={20} /><span className="font-medium">當前總市值</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><Landmark size={20} /><span className="font-medium">ç•¶å‰ç¸½å¸‚å€¼</span></div>
                                     <div className="text-3xl font-bold text-white">{summary.totalMarketValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><PieChart size={20} /><span className="font-medium">總持有成本</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><PieChart size={20} /><span className="font-medium">ç¸½æŒæœ‰æˆæœ¬</span></div>
                                     <div className="text-3xl font-bold text-slate-400">{summary.totalHoldingCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><TrendingUp size={20} /><span className="font-medium">預估總損益</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><TrendingUp size={20} /><span className="font-medium">é ä¼°ç¸½æç›Š</span></div>
                                     <div className={`text-3xl font-bold ${summary.totalEstProfit >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                                         {summary.totalEstProfit >= 0 ? '+' : ''}{summary.totalEstProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                     </div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><LineChart size={20} /><span className="font-medium">預估獲利率</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><LineChart size={20} /><span className="font-medium">é ä¼°ç²åˆ©çŽ‡</span></div>
                                     <div className={`text-3xl font-bold ${summary.totalProfitRate >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                                         {summary.totalProfitRate >= 0 ? '+' : ''}{summary.totalProfitRate.toFixed(2)}%
                                     </div>
                                 </div>
                                 
-                                {/* 全域歷史與實現指標 */}
+                                {/* å…¨åŸŸæ­·å²èˆ‡å¯¦ç¾æŒ‡æ¨™ */}
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><PiggyBank size={20} /><span className="font-medium">歷史總配息</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><PiggyBank size={20} /><span className="font-medium">æ­·å²ç¸½é…æ¯</span></div>
                                     <div className="text-3xl font-bold text-amber-400">{dividendSummary.totalAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><Award size={20} /><span className="font-medium">已實現總獲利</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><Award size={20} /><span className="font-medium">å·²å¯¦ç¾ç¸½ç²åˆ©</span></div>
                                     <div className={`text-3xl font-bold ${realizedSummary.totalProfit >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                                         {realizedSummary.totalProfit >= 0 ? '+' : ''}{realizedSummary.totalProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                     </div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><History size={20} /><span className="font-medium">歷史獲利率</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><History size={20} /><span className="font-medium">æ­·å²ç²åˆ©çŽ‡</span></div>
                                     <div className={`text-3xl font-bold ${realizedSummary.totalRate >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                                         {realizedSummary.totalRate >= 0 ? '+' : ''}{realizedSummary.totalRate.toFixed(2)}%
                                     </div>
@@ -599,21 +599,21 @@
                         {activeTab === 'realized' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><CheckCircle2 size={20} /><span className="font-medium">總變現價值</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><CheckCircle2 size={20} /><span className="font-medium">ç¸½è®Šç¾åƒ¹å€¼</span></div>
                                     <div className="text-3xl font-bold text-white">{realizedSummary.totalSold.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><PieChart size={20} /><span className="font-medium">歷史總成本</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><PieChart size={20} /><span className="font-medium">æ­·å²ç¸½æˆæœ¬</span></div>
                                     <div className="text-3xl font-bold text-slate-400">{realizedSummary.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><TrendingUp size={20} /><span className="font-medium">已實現總獲利</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><TrendingUp size={20} /><span className="font-medium">å·²å¯¦ç¾ç¸½ç²åˆ©</span></div>
                                     <div className={`text-3xl font-bold ${realizedSummary.totalProfit >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                                         {realizedSummary.totalProfit >= 0 ? '+' : ''}{realizedSummary.totalProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                     </div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><LineChart size={20} /><span className="font-medium">歷史獲利率</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><LineChart size={20} /><span className="font-medium">æ­·å²ç²åˆ©çŽ‡</span></div>
                                     <div className={`text-3xl font-bold ${realizedSummary.totalRate >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                                         {realizedSummary.totalRate >= 0 ? '+' : ''}{realizedSummary.totalRate.toFixed(2)}%
                                     </div>
@@ -624,36 +624,36 @@
                         {activeTab === 'dividends' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><PiggyBank size={20} /><span className="font-medium">清單累計配息總額</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><PiggyBank size={20} /><span className="font-medium">æ¸…å–®ç´¯è¨ˆé…æ¯ç¸½é¡</span></div>
                                     <div className="text-3xl font-bold text-amber-400">{dividendSummary.totalAmount.toLocaleString()}</div>
                                 </div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between shadow-md">
-                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><Calendar size={20} /><span className="font-medium">今年度配息收入</span></div>
+                                    <div className="flex items-center gap-3 text-slate-400 mb-2"><Calendar size={20} /><span className="font-medium">ä»Šå¹´åº¦é…æ¯æ”¶å…¥</span></div>
                                     <div className="text-3xl font-bold text-white">{dividendSummary.thisYearAmount.toLocaleString()}</div>
                                 </div>
                             </div>
                         )}
 
-                        {/* 核心數據清單列表 */}
+                        {/* æ ¸å¿ƒæ•¸æ“šæ¸…å–®åˆ—è¡¨ */}
                         {activeTab === 'unrealized' && (
                             <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4">
                                 <div className="p-6 border-b border-slate-700 flex justify-between items-center">
-                                    <h2 className="text-lg font-semibold text-white">現有持股清單</h2>
-                                    <span className="text-sm text-slate-400">共 {enhancedPortfolio.length} 筆資產</span>
+                                    <h2 className="text-lg font-semibold text-white">ç¾æœ‰æŒè‚¡æ¸…å–®</h2>
+                                    <span className="text-sm text-slate-400">å…± {enhancedPortfolio.length} ç­†è³‡ç”¢</span>
                                 </div>
                                 <div className="overflow-x-auto custom-scrollbar">
                                     <table className="w-full text-left text-sm whitespace-nowrap">
                                         <thead className="bg-slate-900/50 text-slate-300">
                                             <tr>
-                                                <th className="p-4 font-medium text-left">代號 / 名稱</th>
-                                                <th className="p-4 font-medium text-right">現價 (漲跌幅)</th>
-                                                <th className="p-4 font-medium text-center border-x border-slate-700/50">短中期均價 (7/30日)</th>
-                                                <th className="p-4 font-medium text-center border-r border-slate-700/50">中長期均價 (3/6/12月)</th>
-                                                <th className="p-4 font-medium text-right">規模(股)</th>
-                                                <th className="p-4 font-medium text-right">建倉 / 損益平衡</th>
-                                                <th className="p-4 font-medium text-right">市值 / 成本</th>
-                                                <th className="p-4 font-medium text-right">配息 / 預估損益</th>
-                                                <th className="p-4 font-medium text-center">操作</th>
+                                                <th className="p-4 font-medium text-left">ä»£è™Ÿ / åç¨±</th>
+                                                <th className="p-4 font-medium text-right">ç¾åƒ¹ (æ¼²è·Œå¹…)</th>
+                                                <th className="p-4 font-medium text-center border-x border-slate-700/50">çŸ­ä¸­æœŸå‡åƒ¹ (7/30æ—¥)</th>
+                                                <th className="p-4 font-medium text-center border-r border-slate-700/50">ä¸­é•·æœŸå‡åƒ¹ (3/6/12æœˆ)</th>
+                                                <th className="p-4 font-medium text-right">è¦æ¨¡(è‚¡)</th>
+                                                <th className="p-4 font-medium text-right">å»ºå€‰ / æç›Šå¹³è¡¡</th>
+                                                <th className="p-4 font-medium text-right">å¸‚å€¼ / æˆæœ¬</th>
+                                                <th className="p-4 font-medium text-right">é…æ¯ / é ä¼°æç›Š</th>
+                                                <th className="p-4 font-medium text-center">æ“ä½œ</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-700/50">
@@ -692,7 +692,7 @@
 
                                                     <td className="p-4 text-right">
                                                         <div className="text-slate-300">{item.avgCost.toFixed(2)}</div>
-                                                        <div className="text-xs text-slate-500 mt-1" title="損益平衡價">{item.breakeven.toFixed(2)}</div>
+                                                        <div className="text-xs text-slate-500 mt-1" title="æç›Šå¹³è¡¡åƒ¹">{item.breakeven.toFixed(2)}</div>
                                                     </td>
 
                                                     <td className="p-4 text-right">
@@ -701,7 +701,7 @@
                                                     </td>
 
                                                     <td className="p-4 text-right">
-                                                        <div className="text-amber-400/80 text-xs mb-1" title="歷史配息">{item.dividends.toLocaleString()}</div>
+                                                        <div className="text-amber-400/80 text-xs mb-1" title="æ­·å²é…æ¯">{item.dividends.toLocaleString()}</div>
                                                         <div className={`font-bold ${item.estProfit >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                                                             {item.estProfit > 0 ? '+' : ''}{item.estProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                                         </div>
@@ -712,13 +712,13 @@
 
                                                     <td className="p-4 text-center">
                                                         <div className="flex items-center justify-center gap-1.5">
-                                                            <button onClick={() => handleOpenTrade(item)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 rounded-xl transition-colors" title="交易 (加/減碼)">
+                                                            <button onClick={() => handleOpenTrade(item)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 rounded-xl transition-colors" title="äº¤æ˜“ (åŠ /æ¸›ç¢¼)">
                                                                 <ArrowRightLeft size={16}/>
                                                             </button>
-                                                            <button onClick={() => handleOpenForm('edit', item)} className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700 rounded-xl transition-colors" title="編輯明細">
+                                                            <button onClick={() => handleOpenForm('edit', item)} className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700 rounded-xl transition-colors" title="ç·¨è¼¯æ˜Žç´°">
                                                                 <Edit2 size={16}/>
                                                             </button>
-                                                            <button onClick={() => handleDeleteRequest(item.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-xl transition-colors" title="刪除整筆">
+                                                            <button onClick={() => handleDeleteRequest(item.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-xl transition-colors" title="åˆªé™¤æ•´ç­†">
                                                                 <Trash2 size={16}/>
                                                             </button>
                                                         </div>
@@ -726,14 +726,14 @@
                                                 </tr>
                                             ))}
                                             
-                                            {/* 合計總結列 */}
+                                            {/* åˆè¨ˆç¸½çµåˆ— */}
                                             <tr className="bg-slate-900/80 font-bold border-t-2 border-slate-700">
-                                                <td className="p-4 text-slate-200 text-left">總計</td>
-                                                <td className="p-4 text-right">—</td>
-                                                <td className="p-4 border-x border-slate-700/50 text-center">—</td>
-                                                <td className="p-4 border-r border-slate-700/50 text-center">—</td>
+                                                <td className="p-4 text-slate-200 text-left">ç¸½è¨ˆ</td>
+                                                <td className="p-4 text-right">â€”</td>
+                                                <td className="p-4 border-x border-slate-700/50 text-center">â€”</td>
+                                                <td className="p-4 border-r border-slate-700/50 text-center">â€”</td>
                                                 <td className="p-4 text-right text-slate-200">{summary.totalShares.toLocaleString()}</td>
-                                                <td className="p-4 text-right text-slate-500">—</td>
+                                                <td className="p-4 text-right text-slate-500">â€”</td>
                                                 <td className="p-4 text-right">
                                                     <div className="text-white">{summary.totalMarketValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                                     <div className="text-xs text-slate-500 mt-1">{summary.totalHoldingCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
@@ -743,7 +743,7 @@
                                                     <div className={`${summary.totalEstProfit >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{summary.totalEstProfit > 0 ? '+' : ''}{summary.totalEstProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
                                                     <div className={`text-xs mt-0.5 ${summary.totalProfitRate >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{summary.totalProfitRate > 0 ? '+' : ''}{summary.totalProfitRate.toFixed(2)}%</div>
                                                 </td>
-                                                <td className="p-4 text-center">—</td>
+                                                <td className="p-4 text-center">â€”</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -754,25 +754,25 @@
                         {activeTab === 'realized' && (
                             <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4">
                                 <div className="p-6 border-b border-slate-700 flex justify-between items-center">
-                                    <h2 className="text-lg font-semibold text-white">已實現損益清單</h2>
-                                    <span className="text-sm text-slate-400">共 {enhancedRealized.length} 筆交易</span>
+                                    <h2 className="text-lg font-semibold text-white">å·²å¯¦ç¾æç›Šæ¸…å–®</h2>
+                                    <span className="text-sm text-slate-400">å…± {enhancedRealized.length} ç­†äº¤æ˜“</span>
                                 </div>
                                 <div className="overflow-x-auto custom-scrollbar">
                                     <table className="w-full text-left text-sm whitespace-nowrap">
                                         <thead className="bg-slate-900/50 text-slate-300">
                                             <tr>
-                                                <th className="p-4 font-medium text-left">交易日期</th>
-                                                <th className="p-4 font-medium text-left">代號</th>
-                                                <th className="p-4 font-medium text-left">資產名稱</th>
-                                                <th className="p-4 font-medium text-right">買進均價</th>
-                                                <th className="p-4 font-medium text-right">賣出均價</th>
-                                                <th className="p-4 font-medium text-right">規模(股)</th>
-                                                <th className="p-4 font-medium text-right">投資成本</th>
-                                                <th className="p-4 font-medium text-right">變現價值</th>
-                                                <th className="p-4 font-medium text-right">期間配息</th>
-                                                <th className="p-4 font-medium text-right">已實現損益</th>
-                                                <th className="p-4 font-medium text-right">單筆獲利率</th>
-                                                <th className="p-4 font-medium text-center">操作</th>
+                                                <th className="p-4 font-medium text-left">äº¤æ˜“æ—¥æœŸ</th>
+                                                <th className="p-4 font-medium text-left">ä»£è™Ÿ</th>
+                                                <th className="p-4 font-medium text-left">è³‡ç”¢åç¨±</th>
+                                                <th className="p-4 font-medium text-right">è²·é€²å‡åƒ¹</th>
+                                                <th className="p-4 font-medium text-right">è³£å‡ºå‡åƒ¹</th>
+                                                <th className="p-4 font-medium text-right">è¦æ¨¡(è‚¡)</th>
+                                                <th className="p-4 font-medium text-right">æŠ•è³‡æˆæœ¬</th>
+                                                <th className="p-4 font-medium text-right">è®Šç¾åƒ¹å€¼</th>
+                                                <th className="p-4 font-medium text-right">æœŸé–“é…æ¯</th>
+                                                <th className="p-4 font-medium text-right">å·²å¯¦ç¾æç›Š</th>
+                                                <th className="p-4 font-medium text-right">å–®ç­†ç²åˆ©çŽ‡</th>
+                                                <th className="p-4 font-medium text-center">æ“ä½œ</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-700/50">
@@ -802,14 +802,14 @@
                                                 </tr>
                                             ))}
                                             <tr className="bg-slate-900/50 font-bold">
-                                                <td className="p-4 text-slate-200 text-left" colSpan={5}>合計</td>
+                                                <td className="p-4 text-slate-200 text-left" colSpan={5}>åˆè¨ˆ</td>
                                                 <td className="p-4 text-right text-slate-200">{enhancedRealized.reduce((sum, item) => sum + item.shares, 0).toLocaleString()}</td>
                                                 <td className="p-4 text-right text-slate-400">{realizedSummary.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                 <td className="p-4 text-right text-white">{realizedSummary.totalSold.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                 <td className="p-4 text-right text-amber-400/80">{realizedSummary.totalDividends.toLocaleString()}</td>
                                                 <td className={`p-4 text-right ${realizedSummary.totalProfit >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{realizedSummary.totalProfit > 0 ? '+' : ''}{realizedSummary.totalProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                                                 <td className={`p-4 text-right ${realizedSummary.totalRate >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>{realizedSummary.totalRate > 0 ? '+' : ''}{realizedSummary.totalRate.toFixed(2)}%</td>
-                                                <td className="p-4 text-center">—</td>
+                                                <td className="p-4 text-center">â€”</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -817,28 +817,28 @@
                             </div>
                         )}
 
-                        {/* 配息紀錄清單表格（僅保留包含殖利率的完整版本，消除重複渲染） */}
+                        {/* é…æ¯ç´€éŒ„æ¸…å–®è¡¨æ ¼ï¼ˆåƒ…ä¿ç•™åŒ…å«æ®–åˆ©çŽ‡çš„å®Œæ•´ç‰ˆæœ¬ï¼Œæ¶ˆé™¤é‡è¤‡æ¸²æŸ“ï¼‰ */}
                         {activeTab === 'dividends' && (
                             <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-4">
                                 <div className="p-6 border-b border-slate-700 flex justify-between items-center">
-                                    <h2 className="text-lg font-semibold text-white">現金配息紀錄</h2>
-                                    <span className="text-sm text-slate-400">共 {dividendSummary.count} 筆紀錄</span>
+                                    <h2 className="text-lg font-semibold text-white">ç¾é‡‘é…æ¯ç´€éŒ„</h2>
+                                    <span className="text-sm text-slate-400">å…± {dividendSummary.count} ç­†ç´€éŒ„</span>
                                 </div>
                                 <div className="overflow-x-auto custom-scrollbar">
                                     <table className="w-full text-left text-sm whitespace-nowrap">
                                         <thead className="bg-slate-900/50 text-slate-300">
                                             <tr>
-                                                <th className="p-4 font-medium text-left">發放日期</th>
-                                                <th className="p-4 font-medium text-left">代號</th>
-                                                <th className="p-4 font-medium text-left">資產名稱</th>
-                                                <th className="p-4 font-medium text-right">每股配息</th>
-                                                <th className="p-4 font-medium text-right">參與配息股數</th>
-                                                <th className="p-4 font-medium text-right">實領總額</th>
+                                                <th className="p-4 font-medium text-left">ç™¼æ”¾æ—¥æœŸ</th>
+                                                <th className="p-4 font-medium text-left">ä»£è™Ÿ</th>
+                                                <th className="p-4 font-medium text-left">è³‡ç”¢åç¨±</th>
+                                                <th className="p-4 font-medium text-right">æ¯è‚¡é…æ¯</th>
+                                                <th className="p-4 font-medium text-right">åƒèˆ‡é…æ¯è‚¡æ•¸</th>
+                                                <th className="p-4 font-medium text-right">å¯¦é ˜ç¸½é¡</th>
                                                 <th className="p-4 font-medium text-right">
-                                                    單次殖利率<br/>
-                                                    <span className="text-xs text-slate-500 font-normal">(現價 / 成本)</span>
+                                                    å–®æ¬¡æ®–åˆ©çŽ‡<br/>
+                                                    <span className="text-xs text-slate-500 font-normal">(ç¾åƒ¹ / æˆæœ¬)</span>
                                                 </th>
-                                                <th className="p-4 font-medium text-center">操作</th>
+                                                <th className="p-4 font-medium text-center">æ“ä½œ</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-700/50">
@@ -859,8 +859,8 @@
                                                         <td className="p-4 text-right text-slate-300">{item.shares.toLocaleString()}</td>
                                                         <td className="p-4 text-right font-bold text-amber-400">{item.amount.toLocaleString()}</td>
                                                         <td className="p-4 text-right">
-                                                            <div className="text-white" title="以現價計算">{yieldByPrice > 0 ? yieldByPrice.toFixed(2) + '%' : '-'}</div>
-                                                            <div className="text-xs text-slate-500 mt-1" title="以建倉成本計算">{yieldByCost > 0 ? yieldByCost.toFixed(2) + '%' : '-'}</div>
+                                                            <div className="text-white" title="ä»¥ç¾åƒ¹è¨ˆç®—">{yieldByPrice > 0 ? yieldByPrice.toFixed(2) + '%' : '-'}</div>
+                                                            <div className="text-xs text-slate-500 mt-1" title="ä»¥å»ºå€‰æˆæœ¬è¨ˆç®—">{yieldByCost > 0 ? yieldByCost.toFixed(2) + '%' : '-'}</div>
                                                         </td>
                                                         <td className="p-4 text-center">
                                                             <div className="flex items-center justify-center gap-2">
@@ -872,10 +872,10 @@
                                                 );
                                             })}
                                             <tr className="bg-slate-900/80 font-bold border-t-2 border-slate-700">
-                                                <td className="p-4 text-slate-200 text-left" colSpan={5}>總計</td>
+                                                <td className="p-4 text-slate-200 text-left" colSpan={5}>ç¸½è¨ˆ</td>
                                                 <td className="p-4 text-right text-amber-400">{dividendSummary.totalAmount.toLocaleString()}</td>
-                                                <td className="p-4 text-right text-slate-500">—</td>
-                                                <td className="p-4 text-center">—</td>
+                                                <td className="p-4 text-right text-slate-500">â€”</td>
+                                                <td className="p-4 text-center">â€”</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -883,43 +883,43 @@
                             </div>
                         )}
 
-                        {/* 自訂刪除確認 Modal */}
+                        {/* è‡ªè¨‚åˆªé™¤ç¢ºèª Modal */}
                         {deleteTarget && (
                             <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                                 <div className="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col p-6">
                                     <div className="flex items-center gap-3 mb-4 text-red-400">
                                         <AlertCircle size={28} />
-                                        <h3 className="text-xl font-bold text-white">確認刪除</h3>
+                                        <h3 className="text-xl font-bold text-white">ç¢ºèªåˆªé™¤</h3>
                                     </div>
                                     <p className="text-slate-300 mb-6 leading-relaxed">
-                                        確定要刪除這筆紀錄嗎？此操作將<strong className="text-red-400">無法復原</strong>。
+                                        ç¢ºå®šè¦åˆªé™¤é€™ç­†ç´€éŒ„å—Žï¼Ÿæ­¤æ“ä½œå°‡<strong className="text-red-400">ç„¡æ³•å¾©åŽŸ</strong>ã€‚
                                     </p>
                                     <div className="flex justify-end gap-3 mt-2">
                                         <button 
                                             onClick={() => setDeleteTarget(null)} 
                                             className="px-5 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-slate-700 transition-colors"
                                         >
-                                            取消
+                                            å–æ¶ˆ
                                         </button>
                                         <button 
                                             onClick={handleConfirmDelete} 
                                             className="px-5 py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-500 transition-colors shadow-lg shadow-red-900/50 flex items-center gap-2"
                                         >
-                                            <Trash2 size={18} /> 確認刪除
+                                            <Trash2 size={18} /> ç¢ºèªåˆªé™¤
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* 交易 (加/減碼) Form Modal */}
+                        {/* äº¤æ˜“ (åŠ /æ¸›ç¢¼) Form Modal */}
                         {isTradeOpen && tradeAsset && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                                 <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col">
                                     <div className="flex justify-between items-center p-5 border-b border-slate-700 bg-slate-900/30">
                                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
                                             <ArrowRightLeft size={20} className={tradeData.type === 'buy' ? 'text-red-400' : 'text-emerald-400'}/>
-                                            加減碼交易 - {tradeAsset.name}
+                                            åŠ æ¸›ç¢¼äº¤æ˜“ - {tradeAsset.name}
                                         </h3>
                                         <button onClick={() => setIsTradeOpen(false)} className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"><X size={20} /></button>
                                     </div>
@@ -927,44 +927,44 @@
                                     <form onSubmit={handleTradeSubmit} className="p-6 space-y-5">
                                         <div className="flex p-1.5 bg-slate-900 rounded-xl border border-slate-700">
                                             <button type="button" onClick={() => setTradeData({...tradeData, type: 'buy'})} className={`flex-1 py-2.5 rounded-lg font-bold transition-all ${tradeData.type === 'buy' ? 'bg-red-500/20 text-red-400 shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}>
-                                                買入 (加碼)
+                                                è²·å…¥ (åŠ ç¢¼)
                                             </button>
                                             <button type="button" onClick={() => setTradeData({...tradeData, type: 'sell'})} className={`flex-1 py-2.5 rounded-lg font-bold transition-all ${tradeData.type === 'sell' ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}>
-                                                賣出 (減碼)
+                                                è³£å‡º (æ¸›ç¢¼)
                                             </button>
                                         </div>
 
                                         <div className="bg-slate-900/50 p-4 rounded-xl text-sm text-slate-300 space-y-2.5 border border-slate-700/50">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-slate-400">目前持有股數</span>
-                                                <span className="font-bold text-white text-base">{tradeAsset.shares.toLocaleString()} <span className="text-sm font-normal text-slate-400">股</span></span>
+                                                <span className="text-slate-400">ç›®å‰æŒæœ‰è‚¡æ•¸</span>
+                                                <span className="font-bold text-white text-base">{tradeAsset.shares.toLocaleString()} <span className="text-sm font-normal text-slate-400">è‚¡</span></span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-slate-400">目前建倉均價</span>
+                                                <span className="text-slate-400">ç›®å‰å»ºå€‰å‡åƒ¹</span>
                                                 <span className="font-bold text-white text-base">{tradeAsset.avgCost.toFixed(2)}</span>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-400 mb-1">交易日期</label>
+                                            <label className="block text-sm font-medium text-slate-400 mb-1">äº¤æ˜“æ—¥æœŸ</label>
                                             <input type="date" required value={tradeData.date} onChange={(e) => setTradeData({...tradeData, date: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-400 mb-1">成交單價</label>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1">æˆäº¤å–®åƒ¹</label>
                                                 <input type="number" step="any" required value={tradeData.price} onChange={(e) => setTradeData({...tradeData, price: e.target.value})} className={`w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 ${tradeData.type === 'buy' ? 'focus:border-red-500 focus:ring-red-500' : 'focus:border-emerald-500 focus:ring-emerald-500'}`} />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-400 mb-1">交易股數</label>
-                                                <input type="number" required min="1" max={tradeData.type === 'sell' ? tradeAsset.shares : undefined} value={tradeData.shares} onChange={(e) => setTradeData({...tradeData, shares: e.target.value})} className={`w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 ${tradeData.type === 'buy' ? 'focus:border-red-500 focus:ring-red-500' : 'focus:border-emerald-500 focus:ring-emerald-500'}`} placeholder="輸入股數" />
+                                                <label className="block text-sm font-medium text-slate-400 mb-1">äº¤æ˜“è‚¡æ•¸</label>
+                                                <input type="number" required min="1" max={tradeData.type === 'sell' ? tradeAsset.shares : undefined} value={tradeData.shares} onChange={(e) => setTradeData({...tradeData, shares: e.target.value})} className={`w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 ${tradeData.type === 'buy' ? 'focus:border-red-500 focus:ring-red-500' : 'focus:border-emerald-500 focus:ring-emerald-500'}`} placeholder="è¼¸å…¥è‚¡æ•¸" />
                                             </div>
                                         </div>
 
                                         <div className="mt-6 pt-5 border-t border-slate-700 flex justify-end gap-3">
-                                            <button type="button" onClick={() => {setIsTradeOpen(false); setErrorMsg('');}} className="px-5 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-slate-700 transition-colors">取消</button>
+                                            <button type="button" onClick={() => {setIsTradeOpen(false); setErrorMsg('');}} className="px-5 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-slate-700 transition-colors">å–æ¶ˆ</button>
                                             <button type="submit" className={`px-6 py-2.5 rounded-xl font-bold text-white flex items-center gap-2 transition-colors shadow-lg ${tradeData.type === 'buy' ? 'bg-red-600 hover:bg-red-500 shadow-red-900/50' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/50'}`}>
-                                                <Save size={18} /> 確認交易
+                                                <Save size={18} /> ç¢ºèªäº¤æ˜“
                                             </button>
                                         </div>
                                     </form>
@@ -972,15 +972,15 @@
                             </div>
                         )}
 
-                        {/* CRUD 傳統資料 Form Modal */}
+                        {/* CRUD å‚³çµ±è³‡æ–™ Form Modal */}
                         {isFormOpen && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                                 <div className="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
                                     <div className="flex justify-between items-center p-5 border-b border-slate-700 bg-slate-900/30">
                                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
                                             {formMode === 'add' ? <Plus size={20} className="text-emerald-400"/> : <Edit2 size={20} className="text-blue-400"/>}
-                                            {formMode === 'add' ? '新增' : '編輯'}
-                                            {activeTab === 'unrealized' ? '現有持股' : activeTab === 'realized' ? '已實現紀錄' : '配息紀錄'}
+                                            {formMode === 'add' ? 'æ–°å¢ž' : 'ç·¨è¼¯'}
+                                            {activeTab === 'unrealized' ? 'ç¾æœ‰æŒè‚¡' : activeTab === 'realized' ? 'å·²å¯¦ç¾ç´€éŒ„' : 'é…æ¯ç´€éŒ„'}
                                         </h3>
                                         <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"><X size={20} /></button>
                                     </div>
@@ -988,7 +988,7 @@
                                     <form onSubmit={handleFormSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[70vh] custom-scrollbar">
                                         {activeTab !== 'unrealized' && (
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-400 mb-1">交易/發放日期</label>
+                                                <label className="block text-sm font-medium text-slate-400 mb-1">äº¤æ˜“/ç™¼æ”¾æ—¥æœŸ</label>
                                                 <input type="date" required value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
                                             </div>
                                         )}
@@ -996,14 +996,14 @@
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-slate-400 mb-1 flex items-center justify-between">
-                                                    資產代號
+                                                    è³‡ç”¢ä»£è™Ÿ
                                                     {isAutoFetching && <RefreshCw size={12} className="animate-spin text-emerald-400" />}
                                                 </label>
-                                                <input type="text" required placeholder="如 00878" value={formData.code} onBlur={handleCodeBlur} onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+                                                <input type="text" required placeholder="å¦‚ 00878" value={formData.code} onBlur={handleCodeBlur} onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-slate-400 mb-1">資產名稱</label>
-                                                <input type="text" required placeholder="自動辨識中..." value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+                                                <label className="block text-sm font-medium text-slate-400 mb-1">è³‡ç”¢åç¨±</label>
+                                                <input type="text" required placeholder="è‡ªå‹•è¾¨è­˜ä¸­..." value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
                                             </div>
                                         </div>
 
@@ -1011,26 +1011,26 @@
                                             <>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">目前現價</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">ç›®å‰ç¾åƒ¹</label>
                                                         <input type="number" step="any" required value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">前日收盤價 (選填)</label>
-                                                        <input type="number" step="any" value={formData.previousClose} onChange={(e) => setFormData({...formData, previousClose: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="未填預設同現價" />
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">å‰æ—¥æ”¶ç›¤åƒ¹ (é¸å¡«)</label>
+                                                        <input type="number" step="any" value={formData.previousClose} onChange={(e) => setFormData({...formData, previousClose: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="æœªå¡«é è¨­åŒç¾åƒ¹" />
                                                     </div>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">建倉平均成本</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">å»ºå€‰å¹³å‡æˆæœ¬</label>
                                                         <input type="number" step="any" required value={formData.avgCost} onChange={(e) => setFormData({...formData, avgCost: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">持有股數</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">æŒæœ‰è‚¡æ•¸</label>
                                                         <input type="number" required value={formData.shares} onChange={(e) => setFormData({...formData, shares: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-slate-400 mb-1">歷史累計配息</label>
+                                                    <label className="block text-sm font-medium text-slate-400 mb-1">æ­·å²ç´¯è¨ˆé…æ¯</label>
                                                     <input type="number" step="any" required value={formData.dividends} onChange={(e) => setFormData({...formData, dividends: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
                                                 </div>
                                             </>
@@ -1040,21 +1040,21 @@
                                             <>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">買進均價</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">è²·é€²å‡åƒ¹</label>
                                                         <input type="number" step="any" required value={formData.buyPrice} onChange={(e) => setFormData({...formData, buyPrice: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">賣出均價</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">è³£å‡ºå‡åƒ¹</label>
                                                         <input type="number" step="any" required value={formData.sellPrice} onChange={(e) => setFormData({...formData, sellPrice: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
                                                     </div>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">變現股數</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">è®Šç¾è‚¡æ•¸</label>
                                                         <input type="number" required value={formData.shares} onChange={(e) => setFormData({...formData, shares: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">持股期間配息</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">æŒè‚¡æœŸé–“é…æ¯</label>
                                                         <input type="number" step="any" required value={formData.dividends} onChange={(e) => setFormData({...formData, dividends: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
                                                     </div>
                                                 </div>
@@ -1065,25 +1065,25 @@
                                             <>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">每股配息金額</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">æ¯è‚¡é…æ¯é‡‘é¡</label>
                                                         <input type="number" step="any" required value={formData.perShare} onChange={(e) => setFormData({...formData, perShare: e.target.value, amount: Number(e.target.value) * formData.shares})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-amber-500" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-400 mb-1">參與配息股數</label>
+                                                        <label className="block text-sm font-medium text-slate-400 mb-1">åƒèˆ‡é…æ¯è‚¡æ•¸</label>
                                                         <input type="number" required value={formData.shares} onChange={(e) => setFormData({...formData, shares: e.target.value, amount: formData.perShare * Number(e.target.value)})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-amber-500" />
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-slate-400 mb-1">實領配息總額</label>
+                                                    <label className="block text-sm font-medium text-slate-400 mb-1">å¯¦é ˜é…æ¯ç¸½é¡</label>
                                                     <input type="number" step="any" required value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-amber-500" />
                                                 </div>
                                             </>
                                         )}
 
                                         <div className="mt-6 pt-4 border-t border-slate-700 flex justify-end gap-3 bg-slate-900/10">
-                                            <button type="button" onClick={() => setIsFormOpen(false)} className="px-5 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-slate-700 transition-colors">取消</button>
+                                            <button type="button" onClick={() => setIsFormOpen(false)} className="px-5 py-2.5 rounded-xl font-medium text-slate-300 hover:bg-slate-700 transition-colors">å–æ¶ˆ</button>
                                             <button type="submit" className={`px-6 py-2.5 rounded-xl font-medium text-white flex items-center gap-2 transition-colors shadow-lg ${activeTab === 'unrealized' ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/50' : activeTab === 'realized' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-900/50' : 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/50'}`}>
-                                                <Save size={18} /> {formMode === 'add' ? '儲存建檔' : '儲存變更'}
+                                                <Save size={18} /> {formMode === 'add' ? 'å„²å­˜å»ºæª”' : 'å„²å­˜è®Šæ›´'}
                                             </button>
                                         </div>
                                     </form>
@@ -1091,14 +1091,14 @@
                             </div>
                         )}
 
-                        {/* AI 健檢 Modal */}
+                        {/* AI å¥æª¢ Modal */}
                         {isAiModalOpen && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                                 <div className="bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                                     <div className="flex justify-between items-center p-6 border-b border-slate-800 bg-slate-800/50">
                                         <div className="flex items-center gap-3">
                                             <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400"><Activity size={24} /></div>
-                                            <h3 className="text-xl font-bold text-white">AI 投資組合深度健檢</h3>
+                                            <h3 className="text-xl font-bold text-white">AI æŠ•è³‡çµ„åˆæ·±åº¦å¥æª¢</h3>
                                         </div>
                                         <button onClick={() => setIsAiModalOpen(false)} className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"><X size={24} /></button>
                                     </div>
@@ -1107,14 +1107,14 @@
                                         {isAiLoading ? (
                                             <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-4">
                                                 <RefreshCw size={48} className="animate-spin text-emerald-500" />
-                                                <p className="text-lg animate-pulse">正在透過 Search Grounding 聯網檢索最新市場動態...</p>
+                                                <p className="text-lg animate-pulse">æ­£åœ¨é€éŽ Search Grounding è¯ç¶²æª¢ç´¢æœ€æ–°å¸‚å ´å‹•æ…‹...</p>
                                             </div>
                                         ) : aiReport ? (
                                             <div className="space-y-8 animate-in fade-in duration-300">
                                                 <div className="prose prose-invert prose-emerald max-w-none text-slate-300 leading-relaxed whitespace-pre-wrap">{formatMarkdown(aiReport)}</div>
                                                 {aiSources.length > 0 && (
                                                     <div className="mt-8 pt-6 border-t border-slate-800">
-                                                        <h4 className="text-sm font-semibold text-slate-400 mb-4 flex items-center gap-2"><Search size={16} />聯網參考來源</h4>
+                                                        <h4 className="text-sm font-semibold text-slate-400 mb-4 flex items-center gap-2"><Search size={16} />è¯ç¶²åƒè€ƒä¾†æº</h4>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                             {aiSources.map((source, idx) => (
                                                                 <a key={idx} href={source.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors text-sm">
@@ -1137,7 +1137,7 @@
             );
         }
 
-        // 綁定 React 18 到 Root 節點
+        // ç¶å®š React 18 åˆ° Root ç¯€é»ž
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
